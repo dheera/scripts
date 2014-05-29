@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+open(outfile,">/tmp/bukaopu.html");
+print outfile qq{
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+</head><body style="overflow:hidden;">
+<table width="100%" height="100%"><tr><td valign="middle">
+<script>
+var a=0;
+function blink() {
+ a=!a;
+ document.body.style.background=a?"#000000":"#ffffff";
+ document.body.style.color=!a?"#000000":"#ffffff";
+ window.setTimeout('blink()',200);
+ document.getElementById('aa').style.webkitTransform="translateX("+(150*Math.random()-75)+"px) translateY("+(150*Math.random()-75)+"px) scale("+1.5*Math.random()+") rotate("+(Math.random()*30-15)+"deg)";
+}
+blink();
+</script>
+<div id="foo" align="center">
+<center><div style="-webkit-transition:-webkit-transform 0.5s ease;-webkit-transform:scale(2)" id="aa"><span style="font-size:250px;">$ARGV[0]</span></div>
+<br/>
+<!-- <span style="font-size:60px;">不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜不靠譜</span> -->
+</center>
+</div>
+</td></tr></table>
+</body>
+</html>
+};
+close(outfile);
+system("google-chrome --kiosk /tmp/bukaopu.html");
+
