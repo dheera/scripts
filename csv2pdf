@@ -1,0 +1,58 @@
+#!/usr/bin/perl
+
+use Text::CSV_XS;
+use TeX::Encode;
+use Encode;
+
+$tempfile="csv2pdf".rand();
+open(outfile,">/tmp/$tempfile.tex");
+print outfile "\\documentclass[10pt]{article}\n";
+print outfile "\\pagestyle{empty}";
+print outfile "\\usepackage{setspace}";
+print outfile "\\usepackage{fullpage}";
+print outfile "\\usepackage[latin1]{inputenc}";
+print outfile "\\begin{document}";
+
+$csv=Text::CSV_XS->new({binary=>1});
+open(infile,"<$ARGV[0]");
+chomp($line=<infile>);
+$csv->parse($line);
+@headers=$csv->fields();
+$numlines=0;
+while(chomp($line=<infile>)) {
+  $numlines++;
+  print outfile "\\twocolumn";
+  while(!$csv->parse($line)) {
+    # print "\n\n\n*** Bad line: $line\n\n\n";
+    chomp($line2=<infile>);
+    $line.="__NEWLINE__".$line2;
+    # print "\n\n\n*** Trying line: $line\n\n\n";
+  }
+  @columns=$csv->fields();
+  for($i=0;$i<$#headers;$i++) {
+    print outfile "\\par\\noindent\\textbf{$headers[$i]}\\\\\n";
+    $columns[$i]=~s/\~//sg;
+    $columns[$i]=~s/\[/\(/sg;
+    $columns[$i]=~s/\]/\)/sg;
+	$columns[$i]=~s/“/``/sg;
+$columns[$i]=~s/”/''/sg;
+$columns[$i]=~s/–/ -- /sg;
+$columns[$i]=~s/’/'/sg;
+    $columns[$i]=~s/(__NEWLINE__)+/\\\\\n/sg;
+print "\n\n".$columns[$i]."\n";
+    print outfile encode('latex',"$columns[$i]\n\n");
+  }
+}
+close(infile);
+
+print outfile "\\end{document}";
+close(outfile);
+
+print "$numlines lines processed, LaTeXing...";
+system("cd /tmp/;latex $tempfile.tex 2>/dev/null 1>/dev/null;dvips $tempfile.dvi -o $tempfile.ps;ps2pdf $tempfile.ps");
+print "done.\n\n";
+$outputfilename=$ARGV[0];
+$outputfilename=~s/\.csv//i;
+$outputfilename.=".pdf";
+system("cp /tmp/$tempfile.pdf $outputfilename");
+system("rm /tmp/$tempfile"."*");
