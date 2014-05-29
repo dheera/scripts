@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+# Password generator
+# Usage: passgen <domain>
+
+from getpass import getpass
+import sys
+import hashlib
+import base64
+
+masterPassword = getpass();
+cstringhash = hashlib.sha1(masterPassword + "/" + sys.argv[1]).digest()
+outpass = base64.b64encode(cstringhash)[0:12]+"$1Aa"
+print outpass
