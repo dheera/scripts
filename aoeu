@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Switches to qwerty for visitors who need to type things.
+
+setxkbmap -model pc104 -layout us
+

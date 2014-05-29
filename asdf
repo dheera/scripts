@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# switches back to Dvorak for me
+
+setxkbmap -model pc104 -layout dvorak #-variant international
+

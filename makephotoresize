@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+use File::Copy;
+
+$DIR_ROOT=$ARGV[0];
+$DIR_WATERMARK=$ARGV[1];
+
+open(fh,'find '.$DIR_ROOT.'|grep -v nopost|');
+while(chomp($line=<fh>)) {
+  ($dir,$file)=$line=~/^(.*)\/(.*)$/;
+  if($file=~/\.jpg$/i && $dir!~/[0-9]+$/) {
+    if($file=~/[A-Z]/) {
+      $filelc=$file;
+      $filelc=~tr/A-Z/a-z/;
+      move("$dir/$file","$dir/$filelc");
+      $file=$filelc;
+    }
+    $X=`identify $dir/$file`;
+    $Y=$X;
+    $X=~s/.* ([0-9]+)x([0-9]+) .*/$1/s;
+    $Y=~s/.* ([0-9]+)x([0-9]+) .*/$2/s;
+    print "$dir | $file | $X | $Y\n";
+    if(!-e "$dir/web-1024") {
+      mkdir("$dir/web-1024");
+    }
+    if(!-e "$dir/web-1024/$file") {
+      if(1 || $X>$Y) {
+        system("convert -verbose -resize 1536 -sharpen 0x1 $dir/$file /tmp/foo.bmp");
+        if($ARGV[1] && -e "$DIR_WATERMARK/1024.png") {
+          system("convert -strip -verbose -resize 1024 /tmp/foo.bmp /tmp/foo.bmp");
+          system("convert -crop 150x50+0+0 -quality 95 -gravity SouthWest /tmp/foo.bmp /tmp/foo_sub.jpg");
+          $bw=(`identify -format "%[mean]" /tmp/foo_sub.jpg`>32768);
+          $hc=(`identify -format "%[standard-deviation]" /tmp/foo_sub.jpg`>8000);
+ print "[[".`identify -format "%[standard-deviation]" /tmp/foo_sub.jpg`."]]\n";
+ print "<<".$bw.">>\n";
+          if(-e "$DIR_WATERMARK/1024hc.png" && $hc) {
+ print "[[HA!]]\n";
+            $WATERMARKFILE="1024hc.png";
+          } elsif(-e "$DIR_WATERMARK/1024white.png" && -e "$DIR_WATERMARK/1024black.png") {
+            $WATERMARKFILE=$bw?'1024black.png':'1024white.png';
+ } else {
+    $WATERMARKFILE='1024.png';
+  }
+          system("composite -gravity SouthWest -quality 96 -compose over $DIR_WATERMARK/$WATERMARKFILE /tmp/foo.bmp $dir/web-1024/$file");
+          system("exiftool -overwrite_original '-ThumbnailImage<=/tmp/foo_sub.jpg' -Author=\"Dheera Venkatraman | http://dheera.net\" $dir/web-1024/$file");
+        } else {
+          system("convert -verbose -quality 95 -strip -resize 1024 /tmp/foo.bmp $dir/1024/$file");
+          system("exiftool -overwrite_original -Author=\"Dheera Venkatraman | http://dheera.net\" $dir/web-1024/$file");
+        }
+        unlink("/tmp/foo.bmp");
+#        unlink("/tmp/foo_sub.jpg");
+      }
+    }
+    if(!-e "$dir/web-2048") {
+      mkdir("$dir/web-2048");
+    }
+    if(!-e "$dir/web-2048/$file") {
+      if(1 || $X>$Y) {
+        system("convert -verbose -resize 3072 -sharpen 0x1.5 $dir/$file /tmp/foo.bmp");
+        if($ARGV[1] && -e "$DIR_WATERMARK/2048.png") {
+          system("convert -strip -verbose -resize 2048 /tmp/foo.bmp /tmp/foo.bmp");
+          system("convert -crop 300x100+0+0 -quality 95 -gravity SouthWest /tmp/foo.bmp /tmp/foo_sub.jpg");
+          $bw=(`identify -format "%[mean]" /tmp/foo_sub.jpg`>32768);
+          $hc=(`identify -format "%[standard-deviation]" /tmp/foo_sub.jpg`>8000);
+ print "<<".$bw.">>\n";
+          if(-e "$DIR_WATERMARK/2048hc.png" && $hc) {
+            $WATERMARKFILE="2048hc.png";
+          } elsif(-e "$DIR_WATERMARK/2048white.png" && -e "$DIR_WATERMARK/2048black.png") {
+            $WATERMARKFILE=$bw?'2048black.png':'2048white.png';
+ } else {
+    $WATERMARKFILE='2048.png';
+  }
+          system("composite -gravity SouthWest -quality 98 -compose over $DIR_WATERMARK/$WATERMARKFILE /tmp/foo.bmp $dir/web-2048/$file");
+          system("exiftool -overwrite_original '-ThumbnailImage<=/tmp/foo_sub.jpg' -Author=\"Dheera Venkatraman | http://dheera.net\" $dir/web-2048/$file");
+        } else {
+          system("convert -verbose -quality 96 -strip -resize 2048 /tmp/foo.bmp $dir/2048/$file");
+          system("exiftool -overwrite_original -Author=\"Dheera Venkatraman | http://dheera.net\" $dir/web-2048/$file");
+        }
+        unlink("/tmp/foo.bmp");
+        unlink("/tmp/foo_sub.jpg");
+      }
+    }
+  }
+}
+close(fh);
