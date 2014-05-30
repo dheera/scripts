@@ -6,15 +6,16 @@
 
 from getpass import getpass
 from subprocess import Popen, PIPE
-import sys, hashlib, base64, time
+import sys, base64, time
+from passlib.utils.pbkdf2 import pbkdf2
 
-masterPassword = getpass();
-cstringhash = hashlib.sha1(masterPassword + "/" + sys.argv[1]).digest()
-outpass = base64.b64encode(cstringhash)[0:12]+"$1Aa"
+master_password = getpass();
+thehash = pbkdf2(masterPassword + "/" + sys.argv[1],'',100000)
+out_password = base64.b64encode(thehash)[0:12]+"$1Aa"
 
 macro = ""
 
-for char in outpass:
+for char in out_password:
   if char == '$':
     macro += "keydown Shift_L\nkey 4\nkeyup Shift_L\n"
   elif char == '+':
