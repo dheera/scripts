@@ -10,7 +10,7 @@ import sys, base64, time
 from passlib.utils.pbkdf2 import pbkdf2
 
 master_password = getpass();
-thehash = pbkdf2(masterPassword + "/" + sys.argv[1],'',100000)
+thehash = pbkdf2(master_password + "/" + sys.argv[1],'',100000)
 out_password = base64.b64encode(thehash)[0:12]+"$1Aa"
 
 macro = ""
