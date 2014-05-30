@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Password entry by simulating keystrokes
-# Usage: passentry <domain>
+# Usage: passenter <domain>
 # Will enter the password 5 seconds after master password is entered
 
 from getpass import getpass
