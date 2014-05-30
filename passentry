@@ -1,0 +1,35 @@
+#!/usr/bin/python
+
+# Password entry by simulating keystrokes
+# Usage: passentry <domain>
+# Will enter the password 5 seconds after master password is entered
+
+from getpass import getpass
+from subprocess import Popen, PIPE
+import sys, hashlib, base64, time
+
+masterPassword = getpass();
+cstringhash = hashlib.sha1(masterPassword + "/" + sys.argv[1]).digest()
+outpass = base64.b64encode(cstringhash)[0:12]+"$1Aa"
+
+macro = ""
+
+for char in outpass:
+  if char == '$':
+    macro += "keydown Shift_L\nkey 4\nkeyup Shift_L\n"
+  elif char == '+':
+    macro += "keydown Shift_L\nkey equal\nkeyup Shift_L\n"
+  elif char == '/':
+    macro += "key slash\n"
+  elif char.isupper():
+    macro += "keydown Shift_L\nkey %s\nkeyup Shift_L\n" % char
+  elif char.islower() or char.isdigit():
+    macro += "key %s\n" % char
+
+
+print("Entering password in 5 seconds ... [^C to abort]")
+time.sleep(5)
+
+p = Popen(['xte'], stdin=PIPE)
+p.communicate(macro)
+
