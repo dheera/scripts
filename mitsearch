@@ -8,13 +8,17 @@
 # Find out who has Kerberos id dheera
 # mitsearch uid=dheera
 
+# Search by last and first name
+# mitsearch sn=venkatraman givenName=dheera
+
 # Find out who has (listed) phone number xxx-xxx-xxxx
 # mitsearch telephoneNumber=xxx-xxx-xxxx
 
 # etc.
 
-
 from subprocess import call
 import sys
 
-call(["ldapsearch", "-LLL", "-x", "-h", "ldap-too.mit.edu", "-b", "ou=users,ou=moira,dc=mit,dc=edu", sys.argv[1]])
+query = "(&" + "".join(map(lambda x: "("+x+")", sys.argv[1:])) + ")"
+
+call(["ldapsearch", "-LLL", "-x", "-h", "ldap-too.mit.edu", "-b", "ou=users,ou=moira,dc=mit,dc=edu", query])
