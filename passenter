@@ -38,8 +38,8 @@ for char in out_password:
     macro += "key %s\n" % char
 
 
-print("Entering password in 5 seconds ... [^C to abort]")
-time.sleep(5)
+print("Entering password in 3 seconds ... [^C to abort]")
+time.sleep(3)
 
 p = Popen(['xte'], stdin=PIPE)
 p.communicate(macro.encode('utf-8'))
