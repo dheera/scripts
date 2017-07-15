@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
+import os, sys, base64, time, hashlib
 
-# Require:
-# apt-get install python3-passlib
+try:
+  from getpass import getpass
+except ImportError:
+  print("Please sudo pip3 install getpass")
 
-from getpass import getpass
-import sys, base64, time
-from passlib.utils.pbkdf2 import pbkdf2
+master_password = getpass()
+if len(sys.argv) = 2
 
-master_password = getpass();
+if len(sys.argv)>2:
+  n = int(sys.argv[2])
+else:
+  n = 0
 
-thehash = pbkdf2(
-  (master_password + "/" + sys.argv[1]).encode('utf-8'),
-  b'',
-  100000,
-  keylen = 16
+thehash = hashlib.pbkdf2_hmac(
+    'sha256',
+    (master_password + '/' + sys.argv[1]).encode(),
+    b'salt',
+    100000 + n
 )
 
-out_password = base64.b64encode(thehash)[0:12].decode('utf-8') + "$1Aa"
-
-print(out_password)
+out_password = base64.b64encode(thehash).decode()[0:16] + '$1Aa'
 
