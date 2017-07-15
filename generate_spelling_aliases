@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+import itertools
+import sys
+
+if len(sys.argv) <= 1:
+    print("Usage:\n  {0} clear\n  {0} ls\n  {0} cat\n\n".format(sys.argv[0]))
+    sys.exit(0)
+
+command = sys.argv[1].strip()
+permutations = [''.join(p) for p in itertools.permutations(command)]
+
+for permutation in permutations[1:]:
+    print("alias {0}='{1}'".format(permutation, command))
