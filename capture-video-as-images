@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+from pprint import pprint
+import sys, time
+import cv2
+
+device = int(sys.argv[1])
+prefix = str(int(time.time()))
+
+WIDTH = 640
+HEIGHT = 480
+
+cap = cv2.VideoCapture(device)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
+
+i=0
+while(True):
+  ret, img = cap.read()
+  cv2.imwrite(prefix + '-0-' + str(i) + '.png', img)
+  #key = cv2.waitKey(0)
+  #if key == 32:
+  #  break
+  print(i)
+  i=i+1
+
+cv2.destroyAllWindows()
+cv2.VideoCapture(device).release()

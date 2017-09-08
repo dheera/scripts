@@ -1,0 +1,5 @@
+#!/bin/bash
+rm temp
+$1 > temp
+$2 | diff -u - temp | egrep "^\+[^+]" | sort | uniq | sed -e "s/^+//"
+
