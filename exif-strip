@@ -1,3 +1,6 @@
 #!/bin/bash
+
+# Strips EXIF data from images and adds only Author tag.
+
 exiftool -overwrite_original -ALL= -Author="Dheera Venkatraman | http://dheera.net" $1
 

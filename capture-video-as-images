@@ -4,6 +4,11 @@ from pprint import pprint
 import sys, time
 import cv2
 
+if len(sys.argv) <= 1:
+  print("Usage: %s 2" % sys.argv[0])
+  print("Records frames from /dev/video2 as .png images")
+  sys.exit(0)
+
 device = int(sys.argv[1])
 prefix = str(int(time.time()))
 
@@ -18,9 +23,6 @@ i=0
 while(True):
   ret, img = cap.read()
   cv2.imwrite(prefix + '-0-' + str(i) + '.png', img)
-  #key = cv2.waitKey(0)
-  #if key == 32:
-  #  break
   print(i)
   i=i+1
 
