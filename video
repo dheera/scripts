@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Show /dev/video0
+# video 0
+
+# Show /dev/video1
+# video 1
+
+mplayer tv:// -tv driver=v4l2:width=640:height=480:outfmt=i420:device=/dev/video${1}
