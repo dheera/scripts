@@ -1,0 +1,8 @@
+#!/bin/bash
+
+TID=`xinput list | grep -iPo 'SYNA.*id=\K\d+'`
+xinput disable $TID
+xinput enable $TID
+sleep 0.2
+synclient VertTwoFingerScroll=1
+

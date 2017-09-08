@@ -1,0 +1,4 @@
+#!/bin/sh
+sshuttle --dns --no-latency-control --python /usr/bin/python -l 0.0.0.0 -vr $1 0/0
+#sshuttle --dns --ssh-cmd "ssh_ofc -c arcfour -p 1234 -Z pfthipfthi" --no-latency-control -l 0.0.0.0 -vr miaohaha@miaohaha.net 0/0
+

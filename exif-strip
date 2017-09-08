@@ -1,0 +1,3 @@
+#!/bin/bash
+exiftool -overwrite_original -ALL= -Author="Dheera Venkatraman | http://dheera.net" $1
+

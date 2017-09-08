@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir proxy
+ls -1 *.mp4 | xargs -n 1 --replace=qq --verbose ffmpeg -i qq -vcodec libx264 -acodec libmp3lame -ab 64k -s 480x270 -b 128k proxy/qq
+
