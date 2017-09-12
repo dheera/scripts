@@ -1,0 +1,2 @@
+#!/bin/bash
+ffmpeg -f video4linux2 -s 640x480 -i /dev/video0 -b:v 1M out.mpg
