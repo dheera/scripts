@@ -1,0 +1,18 @@
+#!/usr/bin/python3
+
+import cv2, sys, numpy
+
+if len(sys.argv) < 3:
+  print("Usage: %s square.jpg circle.jpg" % sys.argv[0])
+  sys.exit(0)
+
+infile = sys.argv[1]
+outfile = sys.argv[2]
+
+img = cv2.imread(infile)
+shape = img.shape
+mask = 255*numpy.ones(shape)
+
+cv2.circle(mask, (int(shape[0]/2), int(shape[1]/2)), int(shape[0]/2), (0,0,0), -1)
+img = (mask + img)
+cv2.imwrite(outfile, img)
