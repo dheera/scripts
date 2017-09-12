@@ -1,0 +1,2 @@
+#!/bin/bash
+upower -e | grep battery | xargs upower -i
