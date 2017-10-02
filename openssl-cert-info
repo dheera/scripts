@@ -1,0 +1,3 @@
+#!/bin/bash
+openssl x509 -email -issuer -subject -purpose -modulus -fingerprint -startdate -enddate -noout -in $1
+
