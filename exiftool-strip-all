@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Strips EXIF data from images.
+
+exiftool -overwrite_original -ALL=
+
