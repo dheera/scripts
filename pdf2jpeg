@@ -1,0 +1,2 @@
+#!/bin/bash
+gs -sDEVICE=jpeg -o output_%03d.jpg -dJPEGQ=90 -r600x600 -g4960x7016 "$1"
