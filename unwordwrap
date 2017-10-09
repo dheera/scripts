@@ -1,0 +1,2 @@
+#!/bin/bash
+perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' 
