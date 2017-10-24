@@ -1,0 +1,2 @@
+#!/bin/bash
+iptables -A INPUT -p tcp --tcp-flags RST RST -j DROP
