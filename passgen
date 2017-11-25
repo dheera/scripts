@@ -30,24 +30,28 @@ master_password = getpass()
 if 'n' not in params:
   params['n'] = 0
 
-# tail to tack onto all passwords to generally satisfy
-# 99% of sites' stupid requirements
+# tack this onto the end of a password
+# useful if a site requires a use of a particular restricted set of symbols
 if 'tail' not in params:
   params['tail'] = ""
 
+# ensure an uppercase character
 if 'ensure-upper' not in params:
   params['ensure-upper'] = True 
 
+# ensure an lowercase character
 if 'ensure-lower' not in params:
   params['ensure-lower'] = True 
 
+# ensure a number
 if 'ensure-number' not in params:
   params['ensure-number'] = True 
 
+# ensure a symbol
 if 'ensure-symbol' not in params:
   params['ensure-symbol'] = True 
 
-# length of password (not including tail)
+# length of password
 if 'length' not in params:
   params['length'] = 16
 
