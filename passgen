@@ -2,7 +2,7 @@
 
 # my (almost) state-less password manager
 
-import os, re, sys, base64, time, json
+import hashlib, os, re, sys, base64, time, json
 
 try:
   # try hard
@@ -12,53 +12,50 @@ except ImportError:
   os.system("sudo pip3 install getpass")
   from getpass import getpass
 
-try:
-  # try hard
-  from passlib.utils.pbkdf2 import pbkdf2
-except ImportError:
-  # stop complaining and try harder
-  os.system("sudo pip3 install passlib")
-  from passlib.utils.pbkdf2 import pbkdf2
+# domain name in question, e.g. google.com
+domain = sys.argv[1]
 
 # load parameters for different sites' nitpicks about password requirements
+params = {}
 with open('passgen-params.json', 'r') as f:
-    params = json.loads(f.read())
+    try:
+        params = json.loads(f.read()).get(domain, {})
+    except:
+        print("Error loading params")
 
+# have user input master password
 master_password = getpass()
 
 # nth password used on site
-n = 0
-if 'n' in params.get(sys.argv[1],{}):
-  n = params[sys.argv[1]]['n']
+if 'n' not in params:
+  params['n'] = 0
 
 # tail to tack onto all passwords to generally satisfy
 # 99% of sites' stupid requirements
-tail = "$1Aa"
-if 'tail' in params.get(sys.argv[1],{}):
-  tail = params[sys.argv[1]]['tail']
+if 'tail' not in params:
+  params['tail'] = "$1Aa"
 
 # prevents symbols from appearing in password, for sites that ban symbols
-nosymbols = False
-if 'nosymbols' in params.get(sys.argv[1],{}):
-  nosymbols = params[sys.argv[1]]['nosymbols']
+if 'nosymbols' not in params:
+  params['nosymbols'] = False
 
 # length of password (not including tail)
-length = 12
-if 'length' in params.get(sys.argv[1],{}):
-  length = params[sys.argv[1]]['length']
+if 'length' not in params:
+  params['length'] = 14
 
-thehash = pbkdf2(
-  (master_password + "/" + sys.argv[1]).encode('utf-8'),
+# generate password
+thehash = hashlib.pbkdf2_hmac(
+  'sha256',
+  (master_password + "/" + domain).encode('utf-8'),
   b'',
-  100000+n,
-  keylen = 16
+  200000 + params['n'],
 )
 
 password_text = base64.b64encode(thehash).decode('utf-8')
-if nosymbols:
+if params['nosymbols']:
   password_text = re.sub('[^A-Za-z0-9]', '', password_text)
 
-password = password_text[0:length] + tail
+password = password_text[0:params['length']] + params['tail']
 
 print(password)
 
