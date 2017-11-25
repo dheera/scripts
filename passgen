@@ -35,13 +35,21 @@ if 'n' not in params:
 if 'tail' not in params:
   params['tail'] = "$1Aa"
 
-# prevents symbols from appearing in password, for sites that ban symbols
-if 'nosymbols' not in params:
-  params['nosymbols'] = False
+if 'ensure-upper' not in params:
+  params['ensure-upper'] = True 
+
+if 'ensure-lower' not in params:
+  params['ensure-lower'] = True 
+
+if 'ensure-number' not in params:
+  params['ensure-number'] = True 
+
+if 'ensure-symbol' not in params:
+  params['ensure-symbol'] = True 
 
 # length of password (not including tail)
 if 'length' not in params:
-  params['length'] = 14
+  params['length'] = 16
 
 # generate password
 thehash = hashlib.pbkdf2_hmac(
@@ -51,11 +59,26 @@ thehash = hashlib.pbkdf2_hmac(
   200000 + params['n'],
 )
 
-password_text = base64.b64encode(thehash).decode('utf-8')
-if params['nosymbols']:
-  password_text = re.sub('[^A-Za-z0-9]', '', password_text)
+password_text = bytearray(base64.b64encode(thehash)
+    .replace(b'+', b'')
+    .replace(b'/', b'')
+    .replace(b'=', b'')
+)
 
-password = password_text[0:params['length']] + params['tail']
+if params['ensure-upper']:
+    password_text[0] = 0x41 + (password_text[0] % 26)
+
+if params['ensure-lower']:
+    password_text[1] = 0x61 + (password_text[0] % 26)
+
+if params['ensure-number']:
+    password_text[2] = 0x30 + (password_text[0] % 10)
+
+if params['ensure-symbol']:
+    password_text[3] = 0x21 + (password_text[0] % 10)
+
+
+password = password_text.decode()[0:params['length']]
 
 print(password)
 
