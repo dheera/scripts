@@ -33,7 +33,7 @@ if 'n' not in params:
 # tail to tack onto all passwords to generally satisfy
 # 99% of sites' stupid requirements
 if 'tail' not in params:
-  params['tail'] = "$1Aa"
+  params['tail'] = ""
 
 if 'ensure-upper' not in params:
   params['ensure-upper'] = True 
@@ -78,7 +78,7 @@ if params['ensure-symbol']:
     password_text[3] = 0x21 + (password_text[0] % 10)
 
 
-password = password_text.decode()[0:params['length']]
+password = password_text.decode()[0:params['length']] + params['tail']
 
 print(password)
 
