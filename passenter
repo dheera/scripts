@@ -111,6 +111,10 @@ for char in password:
     macro += "keydown Shift_L\nkey 0\nkeyup Shift_L\n"
   elif char == '+':
     macro += "keydown Shift_L\nkey equal\nkeyup Shift_L\n"
+  elif char == '\'':
+    macro += "key apostrophe\n"
+  elif char == '\"':
+    macro += "keydown Shift_L\nkey apostrophe\nkeyup Shift_L\n"
   elif char == '/':
     macro += "key slash\n"
   elif char.isupper():
