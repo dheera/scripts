@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+
+if len(sys.argv) < 3:
+    print("Usage: %s data.csv template.svg")
+    exit()
+
+with open(sys.argv[2], 'r') as f:
+    template = f.read()
+
+with open(sys.argv[1], 'r') as f:
+    fields = f.readline().strip().split(',')
+
+    for line in f:
+        line = line.strip()
+        if len(line) == 0:
+            continue
+ 
+        values = line.split(',')
+        if len(values) != len(fields):
+            print("Expected " + str(len(fields)) + " values but got " + str(len(headers)))
+            print("Offending line: \n" + line)
+
+        template_instance = template
+        for field, value in zip(fields, values):
+             template_instance = template_instance.replace('{{' + field + '}}', value)
+
+        os.system('mkdir -p out/')
+        file_stem = values[0]
+        with open('out/' + file_stem + '.svg', 'w') as fo:
+            fo.write(template_instance)
+        os.system("inkscape out/%s.svg --export-pdf=out/%s.pdf -T" % (file_stem, file_stem));
+
