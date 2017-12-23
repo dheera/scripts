@@ -11,6 +11,8 @@ if len(sys.argv) < 3:
 with open(sys.argv[2], 'r') as f:
     template = f.read()
 
+template_stem = sys.argv[2].replace('.svg','')
+
 with open(sys.argv[1], 'r') as f:
     fields = f.readline().strip().split(',')
 
@@ -29,7 +31,7 @@ with open(sys.argv[1], 'r') as f:
              template_instance = template_instance.replace('{{' + field + '}}', value)
 
         os.system('mkdir -p out/')
-        file_stem = values[0]
+        file_stem = template_stem + '-' + values[0].lowercase()
         with open('out/' + file_stem + '.svg', 'w') as fo:
             fo.write(template_instance)
         os.system("inkscape out/%s.svg --export-pdf=out/%s.pdf -T" % (file_stem, file_stem));
