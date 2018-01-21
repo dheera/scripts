@@ -1,0 +1,10 @@
+#!/bin/bash
+# stitch panoramas
+
+pto_gen -o project.pto *.tiff
+cpfind --multirow -o project.pto project.pto
+celeste_standalone -i project.pto -o project.pto
+cpclean -o project.pto project.pto
+autooptimiser -a -l -s -m -o project.pto project.pto
+pano_modify --canvas=AUTO --crop=AUTO -o project.pto project.pto
+hugin_executor --stitching --prefix=output project.pto
