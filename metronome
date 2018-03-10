@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+import simpleaudio
+import os
+import time
+import sys
+import threading
+
+if len(sys.argv) < 2:
+  print("Usage: metronome [bpm]")
+  exit()
+
+speed = int(sys.argv[1])
+wave_obj = simpleaudio.WaveObject.from_wave_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), "sounds/tick.wav"))
+
+def tick():
+    global wave_obj
+    threading.Timer(60./speed, tick).start()
+    wave_obj.play()
+
+tick()
+# time.sleep(60)
