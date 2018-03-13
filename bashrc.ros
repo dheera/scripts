@@ -1,0 +1,19 @@
+alias ros='source /opt/ros/kinetic/setup.bash'
+
+# publish to a topic without needing to specify the message type.
+# (why can't rostopic pub just lookup the type?!)
+#
+# usage: rospub /topic/name value
+
+rospub() {
+  topic_type=`rostopic info /rosout | grep Type:  | awk '{print $2}'`
+  rostopic pub $1 $topic_type $2
+}
+
+# view image topics without redundancy, like having to say 'image' FOUR
+# times in one command.
+# usage: rosimageview /some/camera
+
+rosimageview() {
+  rosrun image_view image_view image:=$1/image_raw
+}

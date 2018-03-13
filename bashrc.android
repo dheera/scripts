@@ -1,0 +1,6 @@
+# stupid android sdk can't take care of this crap automatically
+# why can't they just have a .deb that installs to /usr/bin like everything else on the planet?
+# i want to spend time coding, not installing!
+
+PATH=$PATH:/home/dheera/Android/Sdk/platform-tools:/home/dheera/Android/Sdk/tools:/home/dheera/Android/Sdk/build-tools
+

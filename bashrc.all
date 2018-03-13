@@ -1,0 +1,6 @@
+source ${BASH_SOURCE%/*}/bashrc.android
+source ${BASH_SOURCE%/*}/bashrc.nvidia
+source ${BASH_SOURCE%/*}/bashrc.prompt
+source ${BASH_SOURCE%/*}/bashrc.ros
+source ${BASH_SOURCE%/*}/bashrc.speling
+source ${BASH_SOURCE%/*}/bashrc.vars
