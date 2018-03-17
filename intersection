@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+
+if len(sys.argv) < 3:
+    print("Intersection of 2 command outputs.")
+    print("Example:")
+    print("    intersection \"ls -1 directory_a\" \"ls -1 directory_b\"")
+    exit()
+
+try:
+    out0 = subprocess.check_output(sys.argv[1], shell=True).decode('utf-8').split('\n')
+except subprocess.CalledProcessError:
+    print("First command returned error, aborting")
+    exit()
+try:
+    out1 = subprocess.check_output(sys.argv[2], shell=True).decode('utf-8').split('\n')
+except subprocess.CalledProcessError:
+    print("Second command returned error, aborting")
+    exit()
+
+out0 = filter(lambda x:x.strip() != '', out0)
+out1 = filter(lambda x:x.strip() != '', out1)
+
+set0 = set(out0)
+set1 = set(out1)
+
+setout = set0 & set1
+
+print('\n'.join(sorted(list(setout))))
