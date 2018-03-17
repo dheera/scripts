@@ -5,7 +5,7 @@ import sys
 if len(sys.argv) < 3:
     print("Disjunctive union of 2 command outputs.")
     print("Example:")
-    print("    disjunctive-union \"ls -1 directory_a\" \"ls -1 directory_b\"")
+    print("    symmetric-difference \"ls -1 directory_a\" \"ls -1 directory_b\"")
     exit()
 
 try:
