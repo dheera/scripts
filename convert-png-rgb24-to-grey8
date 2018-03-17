@@ -1,0 +1,2 @@
+#!/bin/bash
+convert -colorspace gray -colors 256 -depth 8 +dither -define png:color-type=3 $1 PNG8:$1
