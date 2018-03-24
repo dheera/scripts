@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+# Reads a .pb frozen graph and shows operations.
+
+import json
+import time
+import numpy as np
+import sys
+import tensorflow as tf
+from pprint import pprint
+
+if __name__ == "__main__":
+    graph = tf.Graph()
+        
+    graph_def = None
+    with open(sys.argv[1], 'rb') as f:
+        graph_def = tf.GraphDef.FromString(f.read())
+        
+    if graph_def is None:
+        raise RuntimeError('Error loading frozen graph')
+
+    with graph.as_default():      
+        tf.import_graph_def(graph_def, name='')
+        print('\n'.join([t.name for op in graph.get_operations() for t in op.values()]))
+
