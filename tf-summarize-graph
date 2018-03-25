@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Make tensorflow's summarize_graph easier to use so you don't have to RTFM
+# or dig through 10 levels of your source tree to find it.
+# Usage: summarize_graph some_model.pb
+# TODO: automatic bazel
+
+mkdir -p ~/.whereis
+
+if [ -e ~/.whereis/summarize_graph ]
+then
+  SUMMARIZE_GRAPH=`cat ~/.whereis/summarize_graph`
+else
+  echo "Looking for summarize_graph ..."
+  SUMMARIZE_GRAPH=`find ~ 2>/dev/null | egrep summarize_graph\$ | head -1`
+  echo "Found summarize_graph in $SUMMARIZE_GRAPH"
+  echo $SUMMARIZE_GRAPH > ~/.whereis/summarize_graph
+fi
+
+$SUMMARIZE_GRAPH $1
