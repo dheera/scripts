@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mkdir -p ~/.whereis
+
+if [ -e ~/.whereis/transform_graph ]
+then
+  TRANSFORM_GRAPH=`cat ~/.whereis/transform_graph`
+else
+  echo "Looking for transform_graph ..."
+  TRANSFORM_GRAPH=`find ~ | egrep transform_graph\$ | head -1`
+  echo "Found transform_graph in $TRANSFORM_GRAPH"
+  echo $TRANSFORM_GRAPH > ~/.whereis/transform_graph
+fi
+
+$TRANSFORM_GRAPH {@:$1}
