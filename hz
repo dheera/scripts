@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+# Measures hz of output of stdin.
+# Example:
+#     yes | hz
+
+import numpy
+import sys
+import time
+import threading
+
+def print_loop():
+    global times
+    while True:
+        time.sleep(0.5)
+        if len(times) < 2:
+            continue
+        times_diff = numpy.diff(times)
+        print("hz: %f" % (1/numpy.mean(times_diff)))
+
+if __name__ == "__main__":
+    times = []
+    threading.Thread(target = print_loop, daemon = True).start()
+    for line in sys.stdin:
+        times = times + [time.time()]
+        if len(times) > 1024:
+            times = times[-1024:]
