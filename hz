@@ -16,7 +16,7 @@ def print_loop():
         if len(times) < 2:
             continue
         times_diff = numpy.diff(times)
-        print("hz: %f" % (1/numpy.mean(times_diff)))
+        print("%f" % (1/numpy.mean(times_diff)))
 
 if __name__ == "__main__":
     times = []
