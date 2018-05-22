@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+# Display a Seek RevealPro radiometric tiff
+
+from matplotlib import pyplot as pyplot
+import sys
+import numpy
+import PIL.Image
+
+if len(sys.argv) == 2:
+    infile = sys.argv[1]
+    tmin = -40.
+    tmax = 88.
+elif len(sys.argv) == 4:
+    infile = sys.argv[1]
+    tmin = float(sys.argv[2])
+    tmax = float(sys.argv[3])
+else:
+    print("Usage: seek2gray infile.tiff")
+    print("Usage: seek2gray infile.tiff 0 100 (custom scale)")
+    exit(1)
+
+img = PIL.Image.open(infile)
+img.seek(1)
+outimg_data = numpy.rot90(numpy.reshape(list(img.getdata()), (240, 320)))
+
+pyplot.imshow(outimg_data)
+pyplot.colorbar()
+pyplot.show()
