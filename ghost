@@ -17,7 +17,9 @@ def callback(in_data, frame_count, time_info, status_flags):
     samples = numpy.arange(frame_count) / 44100.0
     wave = (numpy.sin(2 * numpy.pi * f * samples + phase))
     phase += 2*numpy.pi*((frame_count / 44100.0) % (1/f)) / (1/f)
-    f += random.randrange(-10, 10)
+    f += random.randrange(-10, 11)
+    if f <= 10.:
+        f = 10.
     return(numpy.array(min(A, 1) * 127 * wave, dtype = numpy.int8), pyaudio.paContinue)
 
 if __name__ == "__main__":
