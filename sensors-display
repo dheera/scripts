@@ -1,0 +1,4 @@
+#!/bin/bash
+CPUTEMP=`sensors | grep Package | awk '{print $4}' | sed -e s/[^0-9\.]*//g`
+GPUTEMP=`nvidia-smi -q -a | grep "GPU Current Temp" | awk '{print $5}'`
+echo "c $CPUTEMP g $GPUTEMP"

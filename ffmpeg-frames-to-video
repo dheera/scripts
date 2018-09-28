@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ffmpeg -r 15 -start_number 45 -i "out%*.png" -b:v 100M -q:v 2 t.mov
+

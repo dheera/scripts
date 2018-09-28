@@ -18,19 +18,17 @@ if __name__ == "__main__":
 
     img = cv2.imread(sys.argv[1])
  
-    # todo: make a 16M lookup table to speed this up and rewrite in C
-    replace_table = { }
+    replace_table = [(0,0,0)] * 16777216
   
     for replacement in sys.argv[3:]:
         replace_from, replace_to = replacement.split(':')
         replace_from_rgb = hex_to_rgb(replace_from)
         replace_to_rgb = hex_to_rgb(replace_to)
-        replace_table[replace_from_rgb] = replace_to_rgb
+        replace_table[replace_from_rgb[0] + replace_from_rgb[1]*256 + replace_from_rgb[2]*65536] = replace_to_rgb
 
     for i in range(img.shape[0]):
         for j in range(img.shape[1]):
-            c = tuple(img[i,j])
-            if c in replace_table:
-                img[i,j] = replace_table[c]
+            index = img[i,j,0] + img[i,j,1]*256 + img[i,j,2]*65536
+            img[i,j] = replace_table[index]
 
     cv2.imwrite(sys.argv[2], img)

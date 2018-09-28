@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import datetime
+import json
+import numpy
+import os
+import sounddevice
+import subprocess
+import sys
+import threading
+import time
+
+if __name__ == "__main__":
+  f = 440
+  T = 0.15
+  A = 0.5
+  wave = 'sq'
+
+  if len(sys.argv) >= 2:
+      f = float(sys.argv[1])
+  if len(sys.argv) >= 3:
+      T = float(sys.argv[2])
+  if len(sys.argv) >= 4:
+      A = float(sys.argv[3])
+  if len(sys.argv) >= 5:
+      wave = sys.argv[4]
+
+  samples = numpy.arange(44100 * T) / 44100.0
+  if wave == 'sq':
+      wave = min(A, 1) * 127 * (numpy.mod(numpy.floor(samples * f * 2), 2) * 2 - 1)
+  elif wave == 'sin':
+      wave = min(A, 1) * 127 * (numpy.sin(2 * numpy.pi * f * samples))
+
+  sounddevice.default.samplerate = 44100
+  sounddevice.play(wave, blocking=True)

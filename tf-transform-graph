@@ -12,4 +12,9 @@ else
   echo $TRANSFORM_GRAPH > ~/.whereis/transform_graph
 fi
 
+echo
+echo
+echo $TRANSFORM_GRAPH ${@:1}
+echo
+echo
 $TRANSFORM_GRAPH ${@:1}

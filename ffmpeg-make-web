@@ -5,11 +5,14 @@ mkdir out
 
 IN=$1
 OUT=$(echo $1 | sed 's/^\(.*\)\.[a-zA-Z0-9]*$/\1/')
-# webm
-ffmpeg -i $IN -f webm -vcodec libvpx -acodec libvorbis -ab 128000 -crf 22 -s 1280x720 out/$OUT.webm
 
-# mp4
-ffmpeg -i $IN -acodec aac -strict experimental -ac 2 -ab 128k -vcodec libx264 -f mp4 -crf 22 -s 1280x720 out/$OUT.mp4
+#ffmpeg -i $IN -f webm -r:v 24 -vcodec libvpx -an out/$OUT.webm
+#ffmpeg -i $IN -f mp4  -r:v 24 -vcodec h264 -ac 2 -an -vcodec libx264 -f mp4 out/$OUT.mp4
+#ffmpeg -i $IN -f ogv  -r:v 24 -ac 2 -an -vcodec libx264 -f mp4 out/$OUT.mp4
+
+ffmpeg -i $IN -c:v h264 -an -r:v 24 -b:v 800k out/$OUT.mp4 # Convert to MP4
+ffmpeg -i $IN -c:v libtheora -an -r:v 24 -b:v 1500k out/$OUT.ogv # Convert to OGV
+ffmpeg -i $IN -c:v libvpx -an -r:v 24 -b:v 800k out/$OUT.webm # Convert to Webm
 
 # ogg (if you want to support older Firefox)
-ffmpeg2theora $IN -o out/$OUT.ogv -x 1280 -y 720 --videoquality 5 --audioquality 0  --frontend
+#ffmpeg2theora $IN -o out/$OUT.ogv --videoquality 5 --audioquality 0  --frontend

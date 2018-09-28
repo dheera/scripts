@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo /home/dheera/bin/ltwheelconf --altautocenter=100 --wheel DFGT --rampspeed=7 --device /dev/input/event14
+

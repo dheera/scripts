@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import cv2
+import os
+import numpy
+import rospy
+import sys
+import time
+import random
+from sensor_msgs.msg import Image
+
+image_index = 0
+prefix = "image"
+
+def on_image_raw(data):
+    global prefix, image_index
+    if data.encoding == 'bgr8':
+        current_image = numpy.frombuffer(data.data, numpy.uint8).reshape((data.height, data.width, 3))
+    elif data.encoding == 'rgb8':
+        current_image = numpy.frombuffer(data.data, numpy.uint8).reshape((data.height, data.width, 3))[:, :, ::-1]
+    elif data.encoding == 'mono8' or data.encoding == '8UC1':
+        current_image = numpy.frombuffer(data.data, numpy.uint8).reshape((data.height, data.width))
+        current_image = numpy.array((current_image.T, current_image.T, current_image.T)).T
+    elif data.encoding == 'mono16' or data.encoding == '16UC1':
+        current_image = numpy.frombuffer(data.data, numpy.uint16).reshape((data.height, data.width)).astype(numpy.float)
+        current_image_max = numpy.percentile(current_image, 95)
+        current_image_min = numpy.percentile(current_image, 5)
+        current_image = 255*((current_image - current_image_min)/(current_image_max - current_image_min))
+        current_image = numpy.clip(current_image, 0, 255)
+    else:
+        print("unrecognized image type")
+
+    filename = prefix + "-" + str(image_index) + ".png"
+    print(filename)
+    cv2.imwrite(filename, current_image)
+    image_index += 1
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        print("Usage: rostopic2png <topic>")
+        sys.exit(0)
+
+    TOPIC = sys.argv[1]
+    prefix = (TOPIC.replace('/','-')).strip('-')
+
+    rospy.init_node('rosshow_' + str(random.randint(10000,99999)))
+    rospy.Subscriber(TOPIC, Image, on_image_raw)
+    rospy.spin()

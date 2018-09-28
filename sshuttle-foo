@@ -6,5 +6,5 @@
 # Usage: ./sshuttle-foo dheera@someserver.net
 # (so simple!)
 
-sshuttle --dns --no-latency-control --python /usr/bin/python -l 0.0.0.0 -vr $1 0/0
-
+sshuttle --dns --no-latency-control -l 0.0.0.0 -vr $1 0/0
+#  -x 192.168.0.0/16

@@ -1,8 +1,8 @@
 #!/bin/bash
 # stitch panoramas
 
-pto_gen -o project.pto *.tiff
-cpfind --multirow -o project.pto project.pto
+pto_gen -o project.pto *.$1
+cpfind --multirow --celeste -o project.pto project.pto
 celeste_standalone -i project.pto -o project.pto
 cpclean -o project.pto project.pto
 autooptimiser -a -l -s -m -o project.pto project.pto

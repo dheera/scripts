@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Restore your network connections after NVIDIA's JetPack messes
+# up your entire PC and sets up rogue DHCP servers on your network.
+
+echo "# interfaces(5) file used by ifup(8) and ifdown(8)" > /etc/interfaces
+echo "auto lo" >> /etc/interfaces
+echo "iface lo inet loopback" >> /etc/interfaces
+

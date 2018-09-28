@@ -1,0 +1,5 @@
+#!/bin/bash
+first=` ls -1 img_*.tif | head -1`
+ls -1 img_*.tif | xargs -n 1 --replace=qq --verbose align_image_stack --gpu -a qq_ $first qq
+#convert -average al_*.tif al_mean.tif
+

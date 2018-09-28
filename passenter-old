@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+# Require:
+# apt-get install xautomation python3-passlib
+
+# Password entry by simulating keystrokes
+# Usage: passenter <domain>
+# Will enter the password 5 seconds after master password is entered
+
+from getpass import getpass
+from subprocess import Popen, PIPE
+import sys, base64, time
+from passlib.utils.pbkdf2 import pbkdf2
+
+master_password = getpass();
+
+thehash = pbkdf2(
+  (master_password + "/" + sys.argv[1]).encode('utf-8'),
+  b'',
+  100000,
+  keylen = 16
+)
+
+out_password = base64.b64encode(thehash)[0:12].decode('utf-8') + "$1Aa"
+
+macro = ""
+
+for char in out_password:
+  if char == '$':
+    macro += "keydown Shift_L\nkey 4\nkeyup Shift_L\n"
+  elif char == '+':
+    macro += "keydown Shift_L\nkey equal\nkeyup Shift_L\n"
+  elif char == '/':
+    macro += "key slash\n"
+  elif char.isupper():
+    macro += "keydown Shift_L\nkey %s\nkeyup Shift_L\n" % char
+  elif char.islower() or char.isdigit():
+    macro += "key %s\n" % char
+
+print("Entering password in 3 seconds ... [^C to abort]")
+time.sleep(3)
+
+p = Popen(['xte'], stdin=PIPE)
+p.communicate(macro.encode('utf-8'))
+

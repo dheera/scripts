@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ffmpeg -i $1.ogv -c:v libx264 -crf 22 -c:a libmp3lame -qscale:a 2 -ac 2 -ar 44100 $1.mp4
+

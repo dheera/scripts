@@ -17,4 +17,11 @@ else
   echo $SUMMARIZE_GRAPH > ~/.whereis/summarize_graph
 fi
 
-$SUMMARIZE_GRAPH $1
+if [ -e $1 ]
+then
+    echo "You probably meant summarize_graph --in_graph=$1"
+    $SUMMARIZE_GRAPH --in_graph=$1
+else
+    $SUMMARIZE_GRAPH ${@:1}
+fi
+

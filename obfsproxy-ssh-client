@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# obfsproxy's shebang line has python3 but it only works in python2
+
+OBFSPROXY=`which obfsproxy`
+
+python $OBFSPROXY --log-min-severity=info obfs2 --dest=$1:2222 --shared-secret=foofoofoofoo client 127.0.0.1:8022
+

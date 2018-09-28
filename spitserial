@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+import os, signal, sys, time
+import serial
+from pprint import pprint
+import binascii
+
+PORT=sys.argv[1]
+
+try:
+    ser = serial.Serial(PORT, 115200, timeout=0.2, write_timeout=1)
+except serial.serialutil.SerialException:
+    print("cannot open " + PORT)
+    sys.exit(0)
+
+print("port opened successfully")
+
+while(True):
+    c = bytearray(ser.read(1))
+    print(c)
+

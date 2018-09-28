@@ -3,4 +3,4 @@
 
 mkdir resized
 ls -1 *.jpg | xargs -n 1 --replace=qq convert -verbose -resize 1920 qq resized/qq
-ls -1 *.jpg | head -1 | sed -e s/[^0-9]//g | xargs --replace=qq ~/bin/ffmpeg -r 30 -start_number qq -i "resized/%*.jpg" -b:v 100M -q:v 2 timelapse.mov
+ls -1 *.jpg | head -1 | sed -e s/[^0-9]//g | xargs --replace=qq ffmpeg -r 30 -start_number qq -i "resized/%*.jpg" -b:v 100M -q:v 2 timelapse.mov

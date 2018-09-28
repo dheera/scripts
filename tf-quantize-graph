@@ -1,0 +1,34 @@
+#!/bin/bash
+
+mkdir -p ~/.whereis
+
+if [ -e ~/.whereis/summarize_graph ]
+then
+  SUMMARIZE_GRAPH=`cat ~/.whereis/transform_graph`
+else
+  echo "Looking for summarize_graph ..."
+  SUMMARIZE_GRAPH=`find ~ | egrep summarize_graph\$ | head -1`
+  echo "Found summarize_graph in $SUMMARIZE_GRAPH"
+  echo $SUMMARIZE_GRAPH > ~/.whereis/summarize_graph
+fi
+
+if [ -e ~/.whereis/transform_graph ]
+then
+  TRANSFORM_GRAPH=`cat ~/.whereis/transform_graph`
+else
+  echo "Looking for transform_graph ..."
+  TRANSFORM_GRAPH=`find ~ | egrep transform_graph\$ | head -1`
+  echo "Found transform_graph in $TRANSFORM_GRAPH"
+  echo $TRANSFORM_GRAPH > ~/.whereis/transform_graph
+fi
+
+$TRANSFORM_GRAPH \
+  --in_graph=$1 \
+  --out_graph=$2 \
+  --inputs=ImageTensor:0 \
+  --outputs=SemanticPredictions:0 \
+  --transforms='strip_unused_nodes(type=float, shape="1,513,513,3") remove_nodes(op=Identity, op=CheckNumerics) fold_constants(ignore_errors=true) fold_batch_norms fold_old_batch_norms strip_unused_nodes sort_by_execution_order'
+#add_default_attributes strip_unused_nodes(type=float, shape="1,299,299,3")
+#    remove_nodes(op=Identity, op=CheckNumerics) fold_constants(ignore_errors=true)
+#    fold_batch_norms fold_old_batch_norms quantize_weights quantize_nodes
+#    strip_unused_nodes sort_by_execution_order'

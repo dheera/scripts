@@ -31,7 +31,7 @@ with open(sys.argv[1], 'r') as f:
              template_instance = template_instance.replace('{{' + field + '}}', value)
 
         os.system('mkdir -p out/')
-        file_stem = template_stem + '-' + values[0].lowercase()
+        file_stem = template_stem + '-' + values[0].lower()
         with open('out/' + file_stem + '.svg', 'w') as fo:
             fo.write(template_instance)
         os.system("inkscape out/%s.svg --export-pdf=out/%s.pdf -T" % (file_stem, file_stem));

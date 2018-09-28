@@ -22,7 +22,8 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
 i=0
 while(True):
   ret, img = cap.read()
-  cv2.imwrite(prefix + '-0-' + str(i) + '.png', img)
+  if i%10 == 0:
+      cv2.imwrite(prefix + '-0-' + str(i) + '.png', img)
   print(i)
   i=i+1
 

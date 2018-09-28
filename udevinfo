@@ -1,2 +1,4 @@
 #!/bin/bash
+# For people who can't remember the stupid udevadm command.
+
 udevadm info -a -n $1

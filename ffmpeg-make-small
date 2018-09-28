@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir small 
+ls -1 *.mp4 | xargs -n 1 --replace=qq --verbose ffmpeg -i qq -vcodec libx264 -acodec libmp3lame -ab 256k -s 1920x1080 -b 128k small/qq
+

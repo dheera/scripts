@@ -1,4 +1,6 @@
 {
   "yahoo.com": {"n":2},
-  "usps.com": {"nosymbols":true, "tail":""}
+  "usps.com": {"ensure-symbol":false},
+  "baidu.com": {"ensure-symbol":false, "length": 14},
+  "walmart.com": {"length": 12}
 }

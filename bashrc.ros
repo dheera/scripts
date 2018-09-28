@@ -1,4 +1,5 @@
-alias ros='source /opt/ros/kinetic/setup.bash'
+ROSDISTRO=`ls -1 /opt/ros | head -1`
+alias ros="source /opt/ros/$ROSDISTRO/setup.bash"
 
 # publish to a topic without needing to specify the message type.
 # (why can't rostopic pub just lookup the type?!)

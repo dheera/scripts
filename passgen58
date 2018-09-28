@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+# my (almost) state-less password manager
+
+import hashlib, os, re, sys, base58, time, json
+
+script_path = os.path.realpath(__file__)
+
+try:
+  # try hard
+  from getpass import getpass
+except ImportError:
+  # stop complaining and try harder
+  os.system("sudo pip3 install getpass")
+  from getpass import getpass
+
+# domain name in question, e.g. google.com
+domain = sys.argv[1]
+
+# load parameters for different sites' nitpicks about password requirements
+params = {}
+with open(os.path.dirname(os.path.realpath(__file__)) + '/passgen-params.json', 'r') as f:
+    try:
+        params = json.loads(f.read()).get(domain, {})
+    except:
+        print("Error loading params")
+
+# have user input master password
+master_password = getpass()
+
+# nth password used on site
+if 'n' not in params:
+  params['n'] = 0
+
+# tack this onto the end of a password
+# useful if a site requires a use of a particular restricted set of symbols
+if 'tail' not in params:
+  params['tail'] = ""
+
+# ensure an uppercase character
+if 'ensure-upper' not in params:
+  params['ensure-upper'] = True 
+
+# ensure an lowercase character
+if 'ensure-lower' not in params:
+  params['ensure-lower'] = True 
+
+# ensure a number
+if 'ensure-number' not in params:
+  params['ensure-number'] = True 
+
+# ensure a symbol
+if 'ensure-symbol' not in params:
+  params['ensure-symbol'] = True 
+
+# length of password
+if 'length' not in params:
+  params['length'] = 16
+
+# generate password
+thehash = hashlib.pbkdf2_hmac(
+  'sha256',
+  (master_password + "/" + domain).encode('utf-8'),
+  b'',
+  200000 + params['n'],
+)
+
+password_text = bytearray(base58.b58encode(thehash))
+
+if params['ensure-upper']:
+    password_text[0] = 0x41 + (password_text[0] % 26)
+
+if params['ensure-lower']:
+    password_text[1] = 0x61 + (password_text[0] % 26)
+
+if params['ensure-number']:
+    password_text[2] = 0x30 + (password_text[0] % 10)
+
+if params['ensure-symbol']:
+    password_text[3] = 0x21 + (password_text[0] % 10)
+
+
+password = password_text.decode()[0:params['length']] + params['tail']
+
+print(password)
+
