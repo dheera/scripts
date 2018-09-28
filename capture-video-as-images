@@ -5,15 +5,25 @@ import sys, time
 import cv2
 
 if len(sys.argv) <= 1:
-  print("Usage: %s 2" % sys.argv[0])
-  print("Records frames from /dev/video2 as .png images")
+  print("Usage: %s 2 [resolution=1920x1080] [n=10]" % sys.argv[0])
+  print("Records every n frames from /dev/video2 as .png images")
   sys.exit(0)
 
 device = int(sys.argv[1])
 prefix = str(int(time.time()))
 
-WIDTH = 640
-HEIGHT = 480
+if len(sys.argv) >= 3:
+    RESOLUTION = list(map(lambda x:int(x), sys.argv[2].split('x')))
+else:
+    RESOLUTION = [1920, 1080]
+
+if len(sys.argv) >= 4:
+    N = int(sys.argv[3])
+else:
+    N = 10
+
+WIDTH = RESOLUTION[0]
+HEIGHT = RESOLUTION[1]
 
 cap = cv2.VideoCapture(device)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
@@ -22,8 +32,9 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
 i=0
 while(True):
   ret, img = cap.read()
-  if i%10 == 0:
+  if i % N  == 0:
       cv2.imwrite(prefix + '-0-' + str(i) + '.png', img)
+      print("saved image")
   print(i)
   i=i+1
 
