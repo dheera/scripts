@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+import cv2
+import os
+import numpy
+import sys
+import time
+import termgraphics
+import random
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        print("Shows a feed of /dev/videoN in terminal.")
+        print("Usage: video-terminal [N]")
+        sys.exit(0)
+
+    CAMERA = int(sys.argv[1])
+    cap = cv2.VideoCapture(CAMERA)
+
+    g = termgraphics.TermGraphics()
+
+    if len(sys.argv) > 2:
+        skip = int(sys.argv[2])
+    else:
+        skip = 1
+
+    cap.set(3,640)
+    cap.set(4,480)
+
+    prefix = "video" + str(CAMERA) + "-" + str(int(time.time())) + "-"
+
+    seq = 0
+    while True:
+        ret, img = cap.read()
+        if img is None:
+            print("No image read. Maybe device doesn't exist.")
+            exit()
+        resize_ratio = g.shape[0] / img.shape[1]
+        w = int(640 * resize_ratio * 0.50)
+        h = int(480 * resize_ratio * 0.25)
+        resized_img = cv2.resize(img, (w, h))[:,:,::-1]
+        time.sleep(0.1)
+        g.image(numpy.reshape(resized_img, (w*h, 3)).tolist(), w, h, (0, 0), image_type = termgraphics.IMAGE_RGB_2X4)
+        g.draw()
+

@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import cv2
+import os
+import numpy
+import sys
+import time
+import random
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        print("Saves images from /dev/videoN, skipping every [skip] frames.")
+        print("Usage: video-save-images N [skip]")
+        sys.exit(0)
+
+    CAMERA = int(sys.argv[1])
+    cap = cv2.VideoCapture(CAMERA)
+
+    if len(sys.argv) > 2:
+        skip = int(sys.argv[2])
+    else:
+        skip = 1
+
+    cap.set(3,1920)
+    cap.set(4,1080)
+
+    prefix = "video" + str(CAMERA) + "-" + str(int(time.time())) + "-"
+
+    seq = 0
+    while True:
+        ret, img = cap.read()
+        filename = prefix + str(seq) + ".jpg"
+        seq += 1
+
+        if seq % skip != 0:
+            continue
+
+        print(filename, img.shape)
+        cv2.imwrite(filename, img)
+
