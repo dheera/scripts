@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ -z $ROS_DISTRO ]; then 
+  echo "Error: ROS_DISTRO is not set. Did you source setup.bash?"
+  exit;
+fi
+
+ROS_REAL_ROOT=`echo $ROS_ROOT | sed -e s/\\\\/share\\\\/ros//`
+
+if [ -z $ROS_REAL_ROOT ]; then 
+  echo "Error: Cannot determine real root."
+  exit;
+fi
+
+source $ROS_REAL_ROOT/setup.bash
+rosrun nodelet nodelet standalone velodyne_pointcloud/CloudNodelet
