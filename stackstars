@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import glob
+import os
+import sys
+import subprocess
+
+filenames = sorted(glob.glob("img_*.tif"))
+n = len(filenames)
+middle = int(n/2)
+
+print(filenames[middle])
+
+for filename in filenames:
+    stem = filename.replace(".tiff", "").replace(".tif", "")
+    cmd = [ "align_image_stack", "--gpu",
+        "-g", "5",
+        "-i",
+        "-m",
+        "--corr", "0.4",
+        "-t", "2",
+        "-a", "aligned_" + stem + "_",
+        filenames[middle],
+        filename
+    ]
+    print(" ".join(cmd))
+    subprocess.check_call(cmd)
+
+os.system("rm aligned_*_0000.tif")
+
+filenames = sorted(glob.glob("aligned_*.tif"))
+
+cmd = ["gm", "convert", "-average"] + filenames[:middle] + [ "out_l.tif"]
+print(" ".join(cmd))
+subprocess.check_call(cmd)
+
+cmd = ["gm", "convert", "-average"] + filenames[middle:] + [ "out_r.tif"]
+print(" ".join(cmd))
+subprocess.check_call(cmd)
+
+cmd = ["gm", "convert", "-average"] + filenames + [ "out_c.tif"]
+print(" ".join(cmd))
+subprocess.check_call(cmd)
+
+#align_image_stack --gpu -g 5 -i -m --corr 0.7 -t 2 -a qq_ $first qq
+
+#gm convert -average *_0001.tif al_mean.tif
+

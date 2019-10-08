@@ -1,0 +1,17 @@
+#!/bin/bash
+ls $1 | xargs -n 1 exiftool -overwrite_original -ALL= \
+  -Make=Fugue \
+  -Model=0D \
+  -Lens="50.0 mm" \
+  -LensInfo="50mm f/0.5" \
+  -ApertureValue=1.0 \
+  -ISO=25 \
+  -ColorSpace=sRGB \
+  -ColorTone=Normal \
+  -SerialNumber=31415926358979 \
+  -ShutterSpeedValue=0.0001 \
+  -Author="Dheera Venkatraman | http://dheera.net" \
+  -Copyright="Dheera Venkatraman | http://dheera.net" \
+  -XMPToolkit= \
+  -ExifToolVersion=
+
