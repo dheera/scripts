@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import glob
+import numpy as np
+import rawpy
+import rawpy.enhance
+import imageio
+import os
+import sys
+
+from tqdm import tqdm
+
+filenames = glob.glob("*.cr2")
+print(filenames)
+
+dark_mean = None
+dark_n = 0
+
+for filename in tqdm(filenames):
+    with rawpy.imread(filename) as raw:
+        if dark_mean is None:
+            dark_mean = raw.raw_image.copy().astype(np.uint32)
+        else:
+            dark_mean += raw.raw_image
+
+        print(raw.raw_image.shape)
+        print(raw.black_level_per_channel)
+        print(raw.raw_image.dtype)
+
+        dark_n += 1
+
+print(dark_mean.dtype, dark_n)
+dark_mean = (dark_mean / dark_n).astype(np.uint16)
+print(np.mean(dark_mean))
+imageio.imsave('dark.tiff', dark_mean)

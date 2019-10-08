@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import glob
+import numpy as np
+import rawpy
+import rawpy.enhance
+import imageio
+import os
+import sys
+
+from tqdm import tqdm
+
+dark_filename = sys.argv[1]
+dark_frame = imageio.imread(dark_filename)
+
+os.system("mkdir dark_subtracted/")
+
+filenames = sorted(glob.glob("*.cr2"))
+print(filenames)
+
+#print("Finding bad pixels ...")
+#bad_pixels = rawpy.enhance.find_bad_pixels(filenames)
+#print("... done")
+#print("bad pixels:", bad_pixels)
+
+for filename in tqdm(filenames):
+    with rawpy.imread(filename) as raw:
+        #rgb = raw.postprocess(output_bps=16)
+        #rawpy.enhance.repair_bad_pixels(raw, bad_pixels)
+
+        raw.raw_image[:] = (raw.raw_image - dark_frame) * 2 + np.mean(raw.black_level_per_channel)
+
+        rgb = raw.postprocess(
+#            gamma=(1,1),
+            output_bps=16,
+            no_auto_bright = True,
+            user_wb = [1.7, 1.0, 2.0, 1.0],
+            demosaic_algorithm = rawpy.DemosaicAlgorithm.DHT,
+            user_flip = 5)
+#            fbdd_noise_reduction = rawpy.FBDDNoiseReductionMode.Full,
+#            demosaic_algorithm = rawpy.DemosaicAlgorithm.IGV,
+
+#        print(raw.daylight_whitebalance)
+        imageio.imsave('dark_subtracted/' + filename.replace('.cr2','') + '.tif', rgb)
