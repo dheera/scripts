@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mkdir sky${1}
+
+ls -1 img*.tif img*.tiff | xargs -n 1 --replace=qq convert -crop 100%x${1}+0+0 qq sky${1}/qq

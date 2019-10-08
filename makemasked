@@ -1,0 +1,6 @@
+#!/bin/bash
+
+mkdir masked
+
+ls -1 img*.tif | xargs -n 1 --replace=qq composite -compose CopyOpacity mask.tif qq masked/qq
+
