@@ -1,0 +1,3 @@
+#!/bin/bash
+while sleep 0.1; do pacmd set-source-volume bluez_source.70_BF_92_CD_77_32.headset_head_unit 60000; done
+
