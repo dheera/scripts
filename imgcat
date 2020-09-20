@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+import cv2
+import os
+import numpy
+import sys
+import time
+import termgraphics
+import random
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        print("Usage: imgcat somefile.jpg")
+        sys.exit(0)
+
+    IMAGE = sys.argv[1]
+    img = cv2.imread(IMAGE)
+
+    g = termgraphics.TermGraphics()
+
+    if img is None:
+        print("No image read.")
+        exit()
+
+    resize_ratio = g.shape[0] / img.shape[1]
+    w = int(img.shape[1] * resize_ratio * 0.50)
+    h = int(img.shape[0] * resize_ratio * 0.25)
+    resized_img = cv2.resize(img, (w, h))[:,:,::-1]
+    g.image(numpy.reshape(resized_img, (w*h, 3)).tolist(), w, h, (0, 0), image_type = termgraphics.IMAGE_RGB_2X4)
+    g.draw()
+
