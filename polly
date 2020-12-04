@@ -31,13 +31,13 @@ response = polly_client.synthesize_speech(
 )
 
 if args.output:
-    file = open(args.output, 'wb')
-    file.write(response['AudioStream'].read())
-    file.close()
+    f = open(args.output, 'wb')
+    f.write(response['AudioStream'].read())
+    f.close()
 else:
-    file = open("/tmp/polly.ogg", 'wb')
-    file.write(response['AudioStream'].read())
-    file.close()
+    f = open("/tmp/polly.ogg", 'wb')
+    f.write(response['AudioStream'].read())
+    f.close()
     devnull = open(os.devnull, 'w')
     subprocess.call(["play", "/tmp/polly.ogg"], stdout=devnull, stderr=subprocess.STDOUT)
     os.unlink("/tmp/polly.ogg")
