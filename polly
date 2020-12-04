@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+import argparse
+import boto3
+import json
+import os
+import subprocess
+import sys
+
+parser = argparse.ArgumentParser(description="Polly.")
+parser.add_argument('--voice', default="Joanna")
+parser.add_argument('--output', default="")
+args = parser.parse_args()
+
+with open(os.path.expanduser("~/private/credentials/polly.json"), "r") as f:
+    credentials = json.loads(f.read())
+
+polly_client = boto3.Session(
+    aws_access_key_id=credentials["aws_access_key_id"],
+    aws_secret_access_key=credentials["aws_secret_access_key"],
+    region_name='us-west-2'
+).client('polly')
+
+text = ""
+for line in sys.stdin:
+    text += line + "\n"
+
+response = polly_client.synthesize_speech(
+    VoiceId=args.voice,
+    OutputFormat='ogg_vorbis', 
+    Text = text
+)
+
+if args.output:
+    file = open(args.output, 'wb')
+    file.write(response['AudioStream'].read())
+    file.close()
+else:
+    file = open("/tmp/polly.ogg", 'wb')
+    file.write(response['AudioStream'].read())
+    file.close()
+    devnull = open(os.devnull, 'w')
+    subprocess.call(["play", "/tmp/polly.ogg"], stdout=devnull, stderr=subprocess.STDOUT)
+    os.unlink("/tmp/polly.ogg")
