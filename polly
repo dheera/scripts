@@ -9,6 +9,7 @@ import sys
 parser = argparse.ArgumentParser(description="Polly.")
 parser.add_argument('--voice', default="Joanna")
 parser.add_argument('--output', default="")
+parser.add_argument('text', nargs=argparse.REMAINDER)
 args = parser.parse_args()
 
 with open(os.path.expanduser("~/private/credentials/polly.json"), "r") as f:
@@ -20,9 +21,12 @@ polly_client = boto3.Session(
     region_name='us-west-2'
 ).client('polly')
 
-text = ""
-for line in sys.stdin:
-    text += line + "\n"
+if args.text:
+    text = " ".join(args.text)
+else:
+    text = ""
+    for line in sys.stdin:
+        text += line + "\n"
 
 response = polly_client.synthesize_speech(
     VoiceId=args.voice,
