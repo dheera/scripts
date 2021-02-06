@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import json
+import requests
+
+API_TOKEN = "pk_17e9313adfd04730885d4d86386b7668"
+
+BASE_URL = "https://cloud.iexapis.com/stable"
+# BASE_URL = "https://sandbox.iexapis.com/stable"
+
+symbols = [ "XPEV", "NIO", "LI", "GOEV", "API", "GME", "AMC", "MRNA", "CRSP", "BYND", "ENPH"]
+output = []
+
+for symbol in symbols:
+    r = requests.get(
+        "{}/stock/{}/quote".format(BASE_URL, symbol),
+        params = {"token": API_TOKEN},
+    )
+
+    quote = json.loads(r.content.decode())
+    if quote["change"] >= 0:
+        change = "+{:.2f}".format(quote["change"])
+    else:
+        change = "{:.2f}".format(quote["change"])
+    output.append("{} {:.2f} {}".format(symbol, quote["latestPrice"], change))
+
+print("   |   ".join(output))
