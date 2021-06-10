@@ -15,3 +15,6 @@ sudo apt update
 sudo apt install -y ros-foxy-desktop
 
 sudo apt install -y python3-argcomplete
+
+sudo pip install -U colcon-common-extensions
+sudo pip install -U pytest
