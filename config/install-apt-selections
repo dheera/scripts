@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cat files/apt-selections | xargs sudo apt install -y
