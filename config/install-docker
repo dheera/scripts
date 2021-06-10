@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# how it was intended:
+sudo apt install docker.io
+
+# but because of shit like this
+# https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1882942
+
+# we have to do this
+
+sudo mkdir /var/lib/docker.migrating
+echo 'dummy' | sudo tee /var/lib/docker.migrating/workaround.txt
+sudo apt update && apt install -y docker.io
