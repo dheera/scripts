@@ -5,7 +5,7 @@ import requests
 
 r = requests.get(
     "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
-    params = {"symbol": "BTC,ETH,KSM"},
+    params = {"symbol": "BTC,ETH,KSM,DOT,XRT"},
     headers = {"Accept": "application/json", "X-CMC_PRO_API_KEY": "9e7e8997-4fed-4d78-80e7-85b8c33af302"},
 )
 
@@ -14,6 +14,6 @@ results = json.loads(r.content.decode())
 output = []
 
 for coin, coin_data in results.get("data", {}).items():
-    output.append("{} {:.2f}".format(coin, coin_data["quote"]["USD"]["price"]))
+    output.append("{} {:.3f}".format(coin, coin_data["quote"]["USD"]["price"]))
 
 print("   |   ".join(output))
