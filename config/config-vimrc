@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp files/vimrc ~/.vimrc
+
