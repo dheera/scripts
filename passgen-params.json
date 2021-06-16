@@ -1,6 +1,8 @@
 {
   "yahoo.com": {"n":2},
+  "facebook.com": {"n":2},
   "usps.com": {"ensure-symbol":false},
   "baidu.com": {"ensure-symbol":false, "length": 14},
-  "walmart.com": {"length": 12}
+  "walmart.com": {"length": 12},
+  "eaddservices.edd.ca.gov": {"length": 11, "tail": "!"}
 }
