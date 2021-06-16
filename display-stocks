@@ -8,7 +8,7 @@ API_TOKEN = "pk_17e9313adfd04730885d4d86386b7668"
 BASE_URL = "https://cloud.iexapis.com/stable"
 # BASE_URL = "https://sandbox.iexapis.com/stable"
 
-symbols = [ "XPEV", "NIO", "LI", "GOEV", "API", "GME", "AMC", "MRNA", "CRSP", "BYND", "ENPH"]
+symbols = [ "XPEV", "NIO", "LI", "GOEV", "TSLA", "GME", "AMC", "MRNA", "CRSP", "BYND", "ENPH"]
 output = []
 
 for symbol in symbols:
