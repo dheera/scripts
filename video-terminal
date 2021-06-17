@@ -5,7 +5,11 @@ import os
 import numpy
 import sys
 import time
-import termgraphics
+try:
+    import termgraphics
+except ImportError:
+    os.system("pip3 install termgraphics")
+    import termgraphics
 import random
 
 if __name__ == "__main__":
