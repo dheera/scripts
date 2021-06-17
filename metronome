@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
-import simpleaudio
 import os
+try:
+    import simpleaudio
+except ImportError:
+    os.system("pip3 install simpleaudio")
+    import simpleaudio
+
 import time
 import sys
 import threading
