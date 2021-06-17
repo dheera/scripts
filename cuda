@@ -1,6 +1,0 @@
-#!/bin/bash
-# switches to given cuda version
-
-cd /usr/local
-sudo rm cuda
-sudo ln -s cuda-$1 cuda
