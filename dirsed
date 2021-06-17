@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import os, sys, uuid, re
+
+COMMIT = "--commit" in sys.argv
+
+if len(sys.argv) < 3 + int(COMMIT):
+    print("usage: dirsed [search] [replace] --commit")
+    exit(0)
+
+for filename in os.listdir('.'):
+    if filename.startswith("."):
+        continue
+
+    filename_new = re.sub(sys.argv[1], sys.argv[2], filename)
+
+    if COMMIT:
+        print("[wet run] rename %s to %s" % (filename, filename_new))
+        os.rename(filename, filename_new)
+    else:
+        print("[dry run] rename %s to %s" % (filename, filename_new))
+
+
