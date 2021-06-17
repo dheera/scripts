@@ -1,0 +1,16 @@
+chromium-browser
+curl
+docker.io
+flameshot
+gimp
+htop
+iftop
+inkscape
+libimage-exiftool-perl
+nethogs
+screen
+vim
+wget
+xautomation
+xclip
+xdotool
