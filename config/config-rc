@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cp files/vimrc ~/.vimrc
+cp files/xonshrc ~/.xonshrc
 
