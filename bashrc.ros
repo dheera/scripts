@@ -1,20 +1,32 @@
 ROSDISTRO=`ls -1 /opt/ros | head -1`
-alias ros="source /opt/ros/$ROSDISTRO/setup.bash"
+if [[ $0 == "/usr/bin/bash" ]]; then
+    alias ros="source /opt/ros/$ROSDISTRO/setup.bash"
+    alias foxy="source /opt/ros/foxy/setup.bash"
+    alias noetic="source /opt/ros/noetic/setup.bash"
+    alias melodic="source /opt/ros/melodic/setup.bash"
+    alias kinetic="source /opt/ros/kinetic/setup.bash"
+else
+    alias ros="source-bash /opt/ros/$ROSDISTRO/setup.bash"
+    alias foxy="source-bash /opt/ros/foxy/setup.bash"
+    alias noetic="source-bash /opt/ros/noetic/setup.bash"
+    alias melodic="source-bash /opt/ros/melodic/setup.bash"
+    alias kinetic="source-bash /opt/ros/kinetic/setup.bash"
+fi
 
 # publish to a topic without needing to specify the message type.
 # (why can't rostopic pub just lookup the type?!)
 #
 # usage: rospub /topic/name value
 
-rospub() {
-  topic_type=`rostopic info /rosout | grep Type:  | awk '{print $2}'`
-  rostopic pub $1 $topic_type $2
-}
+#rospub() {
+#  topic_type=`rostopic info /rosout | grep Type:  | awk '{print $2}'`
+#  rostopic pub $1 $topic_type $2
+#}
 
 # view image topics without redundancy, like having to say 'image' FOUR
 # times in one command.
 # usage: rosimageview /some/camera
 
-rosimageview() {
-  rosrun image_view image_view image:=$1/image_raw
-}
+#rosimageview() {
+#  rosrun image_view image_view image:=$1/image_raw
+#}

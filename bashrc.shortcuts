@@ -1,0 +1,12 @@
+alias venv.create='virtualenv --system-site-packages -p python3'
+alias tf1='source ~/venv/tf1/bin/activate'
+alias tf2='source ~/venv/tf2/bin/activate'
+alias copy='xclip -selection c'
+
+vpn.toyota () {
+  sshuttle -r poc_test@tunnel.freedomrobotics.ai:$1 192.168.20.0/24 192.168.21.0/24
+}
+
+vpn.freedom () {
+  sshuttle -r freedom@tunnel.freedomrobotics.ai:$1 192.168.20.0/24
+}

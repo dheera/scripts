@@ -1,6 +1,4 @@
-source ${BASH_SOURCE%/*}/bashrc.android
-source ${BASH_SOURCE%/*}/bashrc.nvidia
-source ${BASH_SOURCE%/*}/bashrc.prompt
-source ${BASH_SOURCE%/*}/bashrc.ros
-source ${BASH_SOURCE%/*}/bashrc.speling
-source ${BASH_SOURCE%/*}/bashrc.vars
+export FOREIGN_ALIASES_SUPPRESS_SKIP_MESSAGE=True
+source /home/dheera/bin/scripts/bashrc.ros
+source /home/dheera/bin/scripts/bashrc.speling
+source /home/dheera/bin/scripts/bashrc.vars
