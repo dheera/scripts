@@ -1,3 +1,0 @@
-#!/bin/bash
-ls -1 *.CR2 | xargs -n 1 dcraw -D -4 -j -t 0
-convert -average *.pgm dark.pgm
