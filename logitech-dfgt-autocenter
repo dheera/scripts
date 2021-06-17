@@ -1,3 +1,4 @@
 #!/bin/bash
+# Cause Logitech Driving Force GT wheel to auto center with force feedback.
 sudo /home/dheera/bin/ltwheelconf --altautocenter=100 --wheel DFGT --rampspeed=7 --device /dev/input/event14
 
