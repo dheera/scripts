@@ -2,6 +2,11 @@
 
 import os, sys, uuid
 
+COMMIT = "--commit" in sys.argv
+
+if not COMMIT:
+    print("Dry run, run with --commit to commit")
+
 f = open(".original_names", "a")
 
 for filename in os.listdir('.'):
@@ -9,9 +14,12 @@ for filename in os.listdir('.'):
         continue
     extension = filename[filename.find("."):]
     filename_new = str(uuid.uuid4()) + extension
-    print("%s %s" % (filename, filename_new))
     f.write("%s %s\n" % (filename, filename_new))
-    os.rename(filename, filename_new)
+    if not COMMIT:
+        print("[dry run] rename %s to %s" % (filename, filename_new))
+    else:
+        print("[wet run] rename %s to %s" % (filename, filename_new))
+        os.rename(filename, filename_new)
 
 
 f.close()
