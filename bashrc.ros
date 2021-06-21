@@ -1,13 +1,15 @@
 ROSDISTRO=`ls -1 /opt/ros | head -1`
-if [[ $0 == "/usr/bin/bash" ]]; then
+if [[ $0 == *"bash"* ]]; then
     alias ros="source /opt/ros/$ROSDISTRO/setup.bash"
     alias foxy="source /opt/ros/foxy/setup.bash"
+    alias galactic="source /opt/ros/galactic/setup.bash"
     alias noetic="source /opt/ros/noetic/setup.bash"
     alias melodic="source /opt/ros/melodic/setup.bash"
     alias kinetic="source /opt/ros/kinetic/setup.bash"
 else
     alias ros="source-bash /opt/ros/$ROSDISTRO/setup.bash"
     alias foxy="source-bash /opt/ros/foxy/setup.bash"
+    alias galactic="source-bash /opt/ros/galactic/setup.bash"
     alias noetic="source-bash /opt/ros/noetic/setup.bash"
     alias melodic="source-bash /opt/ros/melodic/setup.bash"
     alias kinetic="source-bash /opt/ros/kinetic/setup.bash"
