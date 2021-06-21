@@ -12,6 +12,13 @@ alias xnoetic="source-bash /opt/ros/noetic/setup.bash"
 alias xmelodic="source-bash /opt/ros/melodic/setup.bash"
 alias xkinetic="source-bash /opt/ros/kinetic/setup.bash"
 
+alias rb="ros2 bag"
+alias rr="ros2 run"
+alias rt="ros2 topic"
+alias rl="ros2 launch"
+alias rn="ros2 node"
+alias rp="ros2 pkg"
+
 # publish to a topic without needing to specify the message type.
 # (why can't rostopic pub just lookup the type?!)
 #
