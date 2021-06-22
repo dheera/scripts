@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# How computing in 2021 should really be:
+
+# sudo apt-add-repository ppa:intel/realsense
+# sudo apt install realsense
+
+# How it really is:
+
+# Google for 30 mins "how to install realsense"
+# Find lots of outdated docs
+# Go to realsense sources
+# Click to release, installation instructions
+# Read this insanely long document
+# https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+
+sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+
+sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
+
+sudo apt-get -y install librealsense2-dkms
+sudo apt-get -y install librealsense2-utils
+sudo apt-get -y install librealsense2-dev
+sudo apt-get -y install librealsense2-dbg
