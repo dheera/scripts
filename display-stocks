@@ -19,7 +19,7 @@ def is_market_open():
             return True
     return False
 
-def fetch_quotes():
+def fetch_quote(symbol):
     if not is_market_open() and os.path.exists(CACHE_FILENAME):
         with open(CACHE_FILENAME) as f:
             return json.loads(f.read())
@@ -40,7 +40,7 @@ def fetch_quotes():
     return quote
 
 for symbol in symbols:
-    quote = fetch_quotes()
+    quote = fetch_quote(symbol)
     if not quote:
         print("Error fetching quotes")
         exit(1)
