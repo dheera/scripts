@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt install xbindkeys xvkbd
+sudo apt install -y xbindkeys xvkbd
 cp files/xbindkeysrc ~/.xbindkeysrc
 ps ax | grep "/xbindkeys" | awk '{print $1}' | xargs -n 1 kill
 xbindkeys

@@ -1,23 +1,53 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import requests
+import time
 
-API_TOKEN = "pk_17e9313adfd04730885d4d86386b7668"
+with open(os.path.expanduser("~/private/credentials/iexcloud.json")) as f:
+    config = json.loads(f.read())
+    API_TOKEN = config["api_token"]
 
 BASE_URL = "https://cloud.iexapis.com/stable"
-# BASE_URL = "https://sandbox.iexapis.com/stable"
+CACHE_FILENAME = "/tmp/quotes.%d.json" % os.getuid()
 
 symbols = [ "XPEV", "NIO", "LI", "GOEV", "TSLA", "GME", "AMC", "MRNA", "CRSP", "BYND", "ENPH"]
 output = []
 
-for symbol in symbols:
+def is_market_open():
+    t = time.gmtime()
+    if t.tm_wday <= 4: # mon-fri
+        if t.tm_hour >= 13 and t.tm_hour <= 21: # 9-16:00 +/- 1 for dst
+            return True
+    return False
+
+def fetch_quote(symbol):
+    if not is_market_open() and os.path.exists(CACHE_FILENAME):
+        with open(CACHE_FILENAME) as f:
+            return json.loads(f.read())
+
     r = requests.get(
         "{}/stock/{}/quote".format(BASE_URL, symbol),
         params = {"token": API_TOKEN},
     )
+    if r.status_code != 200:
+        return None
 
     quote = json.loads(r.content.decode())
+
+    if not is_market_open():
+        with open(CACHE_FILENAME, "w") as f:
+            f.write(json.dumps(quote))
+
+    return quote
+
+for symbol in symbols:
+    quote = fetch_quote(symbol)
+    if not quote:
+        print("Error fetching quotes")
+        exit(1)
+
     if quote["change"] >= 0:
         change = "+{:.2f}".format(quote["change"])
     else:
