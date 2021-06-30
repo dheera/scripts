@@ -6,6 +6,7 @@ gimp
 htop
 iftop
 inkscape
+ipython3
 libimage-exiftool-perl
 links
 nethogs
