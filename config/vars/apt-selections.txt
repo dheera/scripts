@@ -1,6 +1,7 @@
 chromium-browser
 curl
 docker.io
+exfat-fuse
 flameshot
 gimp
 htop
@@ -9,6 +10,7 @@ inkscape
 libimage-exiftool-perl
 links
 nethogs
+rclone
 screen
 vim
 wget

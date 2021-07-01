@@ -1,3 +1,3 @@
 #!/bin/bash
 # gcalcli --nocolor agenda "`date`" | grep . | head -1
-gcalcli --nocolor agenda --military --tsv "`date`" | egrep -v "00:00.*00:00" | cut -f1,2,5 | head -3 | tr '\n' '\t\t' | sed -e s/`date +%Y`\-//g
+gcalcli --nocolor agenda --military --tsv "`date`" | egrep -v "00:00.*00:00" | egrep -v "First Capital" | cut -f1,2,5 | head -2 | tr '\n' '\t\t' | sed -e s/`date +%Y`\-//g

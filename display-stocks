@@ -10,7 +10,7 @@ with open(os.path.expanduser("~/private/credentials/iexcloud.json")) as f:
     API_TOKEN = config["api_token"]
 
 BASE_URL = "https://cloud.iexapis.com/stable"
-CACHE_FILENAME = "/tmp/quotes.%d.json" % os.getuid()
+CACHE_FILENAME = "/tmp/quotes.%d." % os.getuid()
 
 symbols = [ "XPEV", "NIO", "LI", "GOEV", "TSLA", "GME", "AMC", "MRNA", "CRSP", "BYND", "ENPH"]
 output = []
@@ -23,8 +23,8 @@ def is_market_open():
     return False
 
 def fetch_quote(symbol):
-    if not is_market_open() and os.path.exists(CACHE_FILENAME):
-        with open(CACHE_FILENAME) as f:
+    if not is_market_open() and os.path.exists(CACHE_FILENAME + symbol):
+        with open(CACHE_FILENAME + symbol) as f:
             return json.loads(f.read())
 
     r = requests.get(
@@ -37,7 +37,7 @@ def fetch_quote(symbol):
     quote = json.loads(r.content.decode())
 
     if not is_market_open():
-        with open(CACHE_FILENAME, "w") as f:
+        with open(CACHE_FILENAME + symbol, "w") as f:
             f.write(json.dumps(quote))
 
     return quote
