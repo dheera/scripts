@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import random
+import sys
+import PIL.Image
+import PIL.ExifTags
+from pprint import pprint
+
+def parse_maker_note(maker_note):
+    """Split the "maker note" EXIF field from a Raspberry Pi camera image into useful parameters"""
+    camera_parameters = {}
+    last_key = None
+    for p in maker_note.decode().split(" "):
+        # The maker note contains <thing>=<thing> entries, space delimited but with spaces in some values.
+        # So, if there is an = then we assume we've got key=value, but if there is no = sign, we append
+        # the current chunk to the latest value, because that's where it probably belongs...
+        if "=" in p:
+            last_key, v = p.split("=")
+            camera_parameters[last_key] = v
+        else:
+            camera_parameters[last_key] += " " + p
+    return camera_parameters
+
+def read_exif(fn):
+    img = PIL.Image.open(fn)
+
+    exif = {
+        PIL.ExifTags.TAGS[k]: v
+        for k, v in img._getexif().items()
+        if k in PIL.ExifTags.TAGS
+    }
+
+    for k in exif:
+        if type(exif[k]) is tuple and \
+            len(exif[k]) == 2 and \
+            type(exif[k][0]) is int and \
+            type(exif[k][1]) is int:
+            exif[k] = (exif[k][0] / exif[k][1]) if exif[k][1] != 0 else 0
+
+        if type(exif[k]) is bytes:
+            exif[k] = exif[k].decode('utf-8')
+
+    if exif.get("MakerNote"):
+        exif["MakerNote"] = parse_maker_note(exif.get("MakerNote"))
+
+    return exif
+
+print(json.dumps(read_exif(sys.argv[1]), indent = 4))
