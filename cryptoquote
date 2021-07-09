@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+import json
+import requests
+import sys
+
+symbols = sys.argv[1:]
+
+r = requests.get(
+    "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
+    params = {"symbol": ",".join(map(lambda s: s.upper(), symbols)) },
+    headers = {"Accept": "application/json", "X-CMC_PRO_API_KEY": "9e7e8997-4fed-4d78-80e7-85b8c33af302"},
+)
+
+results = json.loads(r.content.decode())
+
+output = []
+
+for coin, coin_data in results.get("data", {}).items():
+    output.append("{} {:.3f}".format(coin, coin_data["quote"]["USD"]["price"]))
+
+print("\n".join(output))
