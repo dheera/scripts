@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import requests
+import sys
+import time
+
+with open(os.path.expanduser("~/private/credentials/iexcloud.json")) as f:
+    config = json.loads(f.read())
+    API_TOKEN = config["api_token"]
+
+BASE_URL = "https://cloud.iexapis.com/stable"
+CACHE_FILENAME = "/tmp/quotes.%d." % os.getuid()
+
+symbols = list(map(lambda s: s.upper(), sys.argv[1:]))
+output = []
+
+def is_market_open():
+    t = time.gmtime()
+    if t.tm_wday <= 4: # mon-fri
+        if t.tm_hour >= 13 and t.tm_hour <= 21: # 9-16:00 +/- 1 for dst
+            return True
+    return False
+
+def fetch_quote(symbol):
+    if not is_market_open() and os.path.exists(CACHE_FILENAME + symbol):
+        with open(CACHE_FILENAME + symbol) as f:
+            return json.loads(f.read())
+
+    r = requests.get(
+        "{}/stock/{}/quote".format(BASE_URL, symbol),
+        params = {"token": API_TOKEN},
+    )
+    if r.status_code != 200:
+        return None
+
+    quote = json.loads(r.content.decode())
+
+    if not is_market_open():
+        with open(CACHE_FILENAME + symbol, "w") as f:
+            f.write(json.dumps(quote))
+
+    return quote
+
+for symbol in symbols:
+    quote = fetch_quote(symbol)
+    if not quote:
+        print("Error fetching quotes")
+        exit(1)
+
+    if quote["change"] >= 0:
+        change = "+{:.2f}".format(quote["change"])
+    else:
+        change = "{:.2f}".format(quote["change"])
+    output.append("{} {:.2f} {}".format(symbol, quote["latestPrice"], change))
+
+print("\n".join(output))
