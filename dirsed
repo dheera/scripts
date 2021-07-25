@@ -14,10 +14,11 @@ for filename in os.listdir('.'):
 
     filename_new = re.sub(sys.argv[1], sys.argv[2], filename)
 
-    if COMMIT:
-        print("[wet run] rename %s to %s" % (filename, filename_new))
-        os.rename(filename, filename_new)
-    else:
-        print("[dry run] rename %s to %s" % (filename, filename_new))
+    if filename != filename_new:
+        if COMMIT:
+            print("[wet run] rename %s to %s" % (filename, filename_new))
+            os.rename(filename, filename_new)
+        else:
+            print("[dry run] rename %s to %s" % (filename, filename_new))
 
 
