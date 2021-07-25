@@ -4,5 +4,6 @@
   "usps.com": {"ensure-symbol":false},
   "baidu.com": {"ensure-symbol":false, "length": 14},
   "walmart.com": {"length": 12},
-  "eaddservices.edd.ca.gov": {"length": 11, "tail": "!"}
+  "eaddservices.edd.ca.gov": {"length": 11, "tail": "!"},
+  "microsoft.com": {"n":3}
 }

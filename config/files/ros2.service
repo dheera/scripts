@@ -1,0 +1,13 @@
+[Unit]
+Description=ROS service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=dheera
+ExecStart=/bin/bash -c 'source /opt/ros/`ls -1 /opt/ros | grep "dashing\|foxy\|galactic" | tail -1`/setup.bash && ros2 launch /etc/ros2.launch'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

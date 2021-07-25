@@ -1,0 +1,5 @@
+<launch>
+  <node name="rosboard_node" pkg="rosboard" type="rosboard_node">
+    <param name="port" type="int" value="8889"/>
+  </node>
+</launch>
