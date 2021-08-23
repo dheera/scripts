@@ -54,6 +54,11 @@
 "xvkbd -text "\[Control]\[Alt]\[Left]""
   b:9
 
+"xvkbd -text '\[XF86AudioLowerVolume]'"
+  b:6
+"xvkbd -text '\[XF86AudioRaiseVolume]'"
+  b:7
+
 #"xterm -geom 50x20+20+20"
 #   Shift+Mod2+alt + s
 #
