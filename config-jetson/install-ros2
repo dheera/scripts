@@ -1,0 +1,5 @@
+#!/bin/bash
+
+wget https://raw.githubusercontent.com/jetsonhacks/installROS2/master/installROS2.sh -O /tmp/installROS2.sh
+chmod 755 /tmp/installROS2.sh
+/tmp/installROS2.sh
