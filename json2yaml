@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+
+import json
+import sys
+import yaml
+
+json_text = sys.stdin.read()
+
+print(yaml.dump(json.loads(json_text)))
