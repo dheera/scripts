@@ -1,5 +1,8 @@
-ROSDISTRO=`ls -1 /opt/ros | head -1`
-alias ros="source /opt/ros/$ROSDISTRO/setup.bash"
+if [[ -e "/opt/ros" ]]; then
+    ROSDISTRO=`ls -1 /opt/ros | head -1`
+    alias ros="source /opt/ros/$ROSDISTRO/setup.bash"
+fi
+
 alias foxy="source /opt/ros/foxy/setup.bash"
 alias galactic="source /opt/ros/galactic/setup.bash"
 alias noetic="source /opt/ros/noetic/setup.bash"
