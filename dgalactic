@@ -1,0 +1,19 @@
+#!/bin/bash
+if docker ps | grep -q dheera_galactic
+then
+    docker exec -it dheera_galactic /bin/bash
+else
+    echo "(starting)"
+    docker rm dheera_galactic 2>/dev/null
+    docker run \
+        -e DISPLAY \
+        -e DBUS_SESSION_BUS_ADDRESS \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        -v /home/dheera:/home/dheera \
+        -v $XAUTHORITY:/root/.Xauthority \
+        --net=host \
+        --name dheera_galactic \
+        --privileged \
+        -it dheera:galactic /bin/bash
+fi
+
