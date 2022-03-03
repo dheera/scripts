@@ -1,10 +1,20 @@
 FROM ros:galactic
 
-RUN sudo apt-get update
-RUN sudo apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     vim \
     screen \
     htop \
     python3-pip \
     ros-galactic-desktop
 
+RUN pip3 install \
+    tornado==6.1 \
+    simplejpeg==1.6.4 \
+    numpy==1.22.2 \
+    psutil==5.8.0 \
+    tensorflow==2.8.0 \
+    torch==1.10.2 \
+    numba==0.55.1 \
+    tqdm==4.63.0 \
+    freedomrobotics_api==1.0.25
