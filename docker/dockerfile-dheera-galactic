@@ -1,0 +1,10 @@
+FROM ros:galactic
+
+RUN sudo apt-get update
+RUN sudo apt-get install -y \
+    vim \
+    screen \
+    htop \
+    python3-pip \
+    ros-galactic-desktop
+

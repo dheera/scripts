@@ -1,0 +1,2 @@
+#!/bin/bash
+docker build -t dheera:galactic - < dockerfile-dheera-galactic
