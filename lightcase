@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+from blinkytape import BlinkyTape
+import time
+import psutil
+
+blinky = BlinkyTape("/dev/lightcase")
+blinky.displayColor(0, 255, 0)
+
+def mean(list):
+    return sum(list)/len(list)
+
+while True:
+    p = psutil.Process()
+    
+    with p.oneshot():
+        cpu_usage = mean(psutil.cpu_percent(percpu=True))
+
+    cpu_light = max(min(int(255 * (cpu_usage / 100.0)), 255), 0)
+
+    for i in range(25):
+        blinky.sendPixel(cpu_light, 0, 255 - cpu_light)
+    blinky.show()
+
+    time.sleep(0.5)
