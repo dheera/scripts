@@ -20,8 +20,8 @@ config_host = config[hostname]
 print(config_host)
 
 while True:
-    position = pyautogui.mouseinfo.position()
-    size = pyautogui.mouseinfo.size()
+    position = tuple(pyautogui.position())
+    size = tuple(pyautogui.size())
     if 'left' in config_host:
         if position[0] == 0:
             print("LEFT")
