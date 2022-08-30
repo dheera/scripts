@@ -5,6 +5,8 @@ import os
 import pyautogui
 import time
 
+pyautogui.FAILSAFE = False
+
 config_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logitech-edge-switcher-config.json")
 hostname = os.uname().nodename.split(".")[0]
 
@@ -17,30 +19,32 @@ if hostname not in config:
 
 config_host = config[hostname]
 
-print(config_host)
-
 while True:
     position = tuple(pyautogui.position())
     size = tuple(pyautogui.size())
     if 'left' in config_host:
         if position[0] == 0:
-            print("LEFT")
             pyautogui.moveTo(1, position[1])
             for i in range(5):
                 for cmd in config_host['left']:
                     os.system(cmd)
     if 'right' in config_host:
         if position[0] >= size[0]-1:
-            print("RIGHT")
             pyautogui.moveTo(position[0]-1, position[1])
             for i in range(5):
                 for cmd in config_host['right']:
                     os.system(cmd)
     if 'top' in config_host:
         if position[1] == 0:
-            print("TOP")
+            pyautogui.moveTo(position[0], 1)
+            for i in range(5):
+                for cmd in config_host['top']:
+                    os.system(cmd)
     if 'bottom' in config_host:
         if position[1] >= size[1]-1:
-            print("BOTTOM")
+            pyautogui.moveTo(position[0], position[1]-1)
+            for i in range(5):
+                for cmd in config_host['bottom']:
+                    os.system(cmd)
 
     time.sleep(0.1)
