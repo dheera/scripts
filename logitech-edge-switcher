@@ -6,7 +6,7 @@ import pyautogui
 import time
 
 config_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logitech-edge-switcher-config.json")
-hostname = os.uname().nodename
+hostname = os.uname().nodename.split(".")[0]
 
 with open(config_filename, "r") as f:
     config = json.loads(f.read())
