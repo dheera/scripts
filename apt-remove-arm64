@@ -1,6 +1,0 @@
-#!/bin/bash
-# Remove arm64 junk on your x86 system.
-
-sudo apt-get purge "^.*:arm64"
-sudo dpkg --remove-architecture arm64
-
