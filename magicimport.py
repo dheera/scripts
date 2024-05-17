@@ -7,7 +7,7 @@ import pip
 
 def get_cache_directory():
     home_dir = os.path.expanduser('~')
-    cache_dir = os.path.join(home_dir, '.magic_import')
+    cache_dir = os.path.join(home_dir, '.magicimport')
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
     return cache_dir
