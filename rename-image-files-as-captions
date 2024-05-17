@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import os
+import re
+from PIL import Image
+from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
+import torch
+
+# Load the pre-trained model and tokenizer
+model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+processor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+
+def clean_filename(text):
+    """
+    Clean the text to make it a valid filename by replacing spaces and symbols with underscores.
+    """
+    return re.sub(r'[^A-Za-z0-9]+', '_', text)
+
+def generate_caption(image_path):
+    """
+    Generate a caption for the image at the specified path.
+    """
+    image = Image.open(image_path)
+    pixel_values = processor(images=image, return_tensors="pt").pixel_values
+    output_ids = model.generate(pixel_values)
+    caption = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    return caption
+
+def rename_images(directory):
+    """
+    Rename all images in the specified directory based on their generated captions.
+    """
+    for filename in os.listdir(directory):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+            image_path = os.path.join(directory, filename)
+            caption = generate_caption(image_path)
+            new_filename = clean_filename(caption) + os.path.splitext(filename)[1]
+            new_filepath = os.path.join(directory, new_filename)
+            os.rename(image_path, new_filepath)
+            print(f"Renamed '{filename}' to '{new_filename}'")
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Caption and rename images in a directory.")
+    parser.add_argument("directory", type=str, help="Path to the directory containing images.")
+    args = parser.parse_args()
+    rename_images(args.directory)
