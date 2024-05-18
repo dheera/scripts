@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Check if the argument (tag) is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <tag>"
+  exit 1
+fi
+
+TAG=$1
+
+# Check if the Docker image with the given tag exists
+if ! docker image inspect "$TAG" > /dev/null 2>&1; then
+  echo "Docker image with tag '$TAG' does not exist. Building it from $TAG.dockerfile..."
+  if [ -f "dockerfiles/$TAG.dockerfile" ]; then
+    docker build -t "dheera:$TAG" -f "dockerfiles/$TAG.dockerfile" .
+    if [ $? -ne 0 ]; then
+      echo "Failed to build Docker image with tag '$TAG'."
+      exit 1
+    fi
+  else
+    echo "Dockerfile '$TAG.dockerfile' does not exist."
+    exit 1
+  fi
+fi
+
+if docker ps | grep -q dheera_$TAG
+then
+    docker exec -it dheera_$TAG /bin/bash
+else
+    echo "(starting)"
+    docker rm dheera_$TAG 2>/dev/null
+    docker run \
+        -e DISPLAY \
+        -e DBUS_SESSION_BUS_ADDRESS \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        -v /home/dheera:/home/dheera \
+        -v $XAUTHORITY:/root/.Xauthority \
+        --net=host \
+        --name dheera_$TAG \
+        --privileged \
+        --runtime nvidia \
+        -it dheera:$TAG /bin/bash
+fi
+

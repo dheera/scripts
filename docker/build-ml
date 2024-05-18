@@ -1,2 +1,0 @@
-#!/bin/bash
-docker build -t dheera:ml - < ml.dockerfile
