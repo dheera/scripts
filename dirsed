@@ -1,24 +1,69 @@
 #!/usr/bin/env python3
 
-import os, sys, uuid, re
+import os
+import re
+import argparse
 
-COMMIT = "--commit" in sys.argv
+def main():
+    parser = argparse.ArgumentParser(description='Rename files in the current directory and subdirectories based on a search and replace pattern.')
+    parser.add_argument('search', help='The search pattern. If --regex is specified, this should be a valid regex pattern.')
+    parser.add_argument('replace', help='The replace pattern.')
+    parser.add_argument('--commit', action='store_true', help='Perform the actual renaming. If not provided, a dry run is done.')
+    parser.add_argument('--regex', action='store_true', help='Interpret the search pattern as a regular expression.')
+    parser.add_argument('--recursive', action='store_true', help='Recurse into subdirectories.')
+    parser.add_argument('--modify-dirs', action='store_true', help='Modify directory names as well as file names.')
 
-if len(sys.argv) < 3 + int(COMMIT):
-    print("usage: dirsed [search] [replace] --commit")
-    exit(0)
+    args = parser.parse_args()
 
-for filename in os.listdir('.'):
+    if args.recursive:
+        for root, dirs, files in os.walk('.'):
+            for filename in files:
+                process_file(root, filename, args)
+            if args.modify_dirs:
+                for dirname in dirs:
+                    process_directory(root, dirname, args)
+    else:
+        for filename in os.listdir('.'):
+            if os.path.isfile(filename):
+                process_file('.', filename, args)
+            elif args.modify_dirs and os.path.isdir(filename):
+                process_directory('.', filename, args)
+
+def process_file(directory, filename, args):
     if filename.startswith("."):
-        continue
+        return
 
-    filename_new = re.sub(sys.argv[1], sys.argv[2], filename)
+    if args.regex:
+        filename_new = re.sub(args.search, args.replace, filename)
+    else:
+        filename_new = filename.replace(args.search, args.replace)
 
     if filename != filename_new:
-        if COMMIT:
-            print("[wet run] rename %s to %s" % (filename, filename_new))
-            os.rename(filename, filename_new)
+        full_path_old = os.path.join(directory, filename)
+        full_path_new = os.path.join(directory, filename_new)
+        if args.commit:
+            print(f"[wet run] rename {full_path_old} to {full_path_new}")
+            os.rename(full_path_old, full_path_new)
         else:
-            print("[dry run] rename %s to %s" % (filename, filename_new))
+            print(f"[dry run] rename {full_path_old} to {full_path_new}")
 
+def process_directory(directory, dirname, args):
+    if dirname.startswith("."):
+        return
 
+    if args.regex:
+        dirname_new = re.sub(args.search, args.replace, dirname)
+    else:
+        dirname_new = dirname.replace(args.search, args.replace)
+
+    if dirname != dirname_new:
+        full_path_old = os.path.join(directory, dirname)
+        full_path_new = os.path.join(directory, dirname_new)
+        if args.commit:
+            print(f"[wet run] rename {full_path_old} to {full_path_new}")
+            os.rename(full_path_old, full_path_new)
+        else:
+            print(f"[dry run] rename {full_path_old} to {full_path_new}")
+
+if __name__ == "__main__":
+    main()
