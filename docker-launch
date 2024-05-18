@@ -9,7 +9,7 @@ fi
 TAG=$1
 
 # Check if the Docker image with the given tag exists
-if ! docker image inspect "$TAG" > /dev/null 2>&1; then
+if ! docker image inspect "dheera:$TAG" > /dev/null 2>&1; then
   echo "Docker image with tag '$TAG' does not exist. Building it from $TAG.dockerfile..."
   if [ -f "dockerfiles/$TAG.dockerfile" ]; then
     docker build -t "dheera:$TAG" -f "dockerfiles/$TAG.dockerfile" .
