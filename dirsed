@@ -5,65 +5,102 @@ import re
 import argparse
 
 def main():
+    # Create an ArgumentParser object for parsing command-line arguments
     parser = argparse.ArgumentParser(description='Rename files in the current directory and subdirectories based on a search and replace pattern.')
+
+    # Add positional arguments for the search and replace patterns
     parser.add_argument('search', help='The search pattern. If --regex is specified, this should be a valid regex pattern.')
     parser.add_argument('replace', help='The replace pattern.')
+
+    # Add optional arguments
     parser.add_argument('--commit', action='store_true', help='Perform the actual renaming. If not provided, a dry run is done.')
     parser.add_argument('--regex', action='store_true', help='Interpret the search pattern as a regular expression.')
     parser.add_argument('--recursive', action='store_true', help='Recurse into subdirectories.')
     parser.add_argument('--modify-dirs', action='store_true', help='Modify directory names as well as file names.')
 
+    # Parse the command-line arguments
     args = parser.parse_args()
 
+    # If recursive option is specified, use os.walk to traverse directories and subdirectories
     if args.recursive:
         for root, dirs, files in os.walk('.'):
+            # Process each file in the current directory
             for filename in files:
                 process_file(root, filename, args)
+            # Process each directory in the current directory if --modify-dirs is specified
             if args.modify_dirs:
                 for dirname in dirs:
                     process_directory(root, dirname, args)
     else:
+        # If not recursive, process only the current directory
         for filename in os.listdir('.'):
+            # Process only files
             if os.path.isfile(filename):
                 process_file('.', filename, args)
+            # Process directories if --modify-dirs is specified
             elif args.modify_dirs and os.path.isdir(filename):
                 process_directory('.', filename, args)
 
 def process_file(directory, filename, args):
+    """
+    Processes and renames a file based on the search and replace patterns.
+    
+    Args:
+        directory (str): The directory where the file is located.
+        filename (str): The name of the file to be processed.
+        args (Namespace): The parsed command-line arguments.
+    """
+    # Skip hidden files
     if filename.startswith("."):
         return
 
+    # Replace pattern in the filename using regex or plain text
     if args.regex:
         filename_new = re.sub(args.search, args.replace, filename)
     else:
         filename_new = filename.replace(args.search, args.replace)
 
+    # If the filename has changed, print the rename action
     if filename != filename_new:
         full_path_old = os.path.join(directory, filename)
         full_path_new = os.path.join(directory, filename_new)
         if args.commit:
             print(f"[wet run] rename {full_path_old} to {full_path_new}")
+            # Actually rename the file if --commit is specified
             os.rename(full_path_old, full_path_new)
         else:
             print(f"[dry run] rename {full_path_old} to {full_path_new}")
 
 def process_directory(directory, dirname, args):
+    """
+    Processes and renames a directory based on the search and replace patterns.
+    
+    Args:
+        directory (str): The parent directory where the directory is located.
+        dirname (str): The name of the directory to be processed.
+        args (Namespace): The parsed command-line arguments.
+    """
+    # Skip hidden directories
     if dirname.startswith("."):
         return
 
+    # Replace pattern in the directory name using regex or plain text
     if args.regex:
         dirname_new = re.sub(args.search, args.replace, dirname)
     else:
         dirname_new = dirname.replace(args.search, args.replace)
 
+    # If the directory name has changed, print the rename action
     if dirname != dirname_new:
         full_path_old = os.path.join(directory, dirname)
         full_path_new = os.path.join(directory, dirname_new)
         if args.commit:
             print(f"[wet run] rename {full_path_old} to {full_path_new}")
+            # Actually rename the directory if --commit is specified
             os.rename(full_path_old, full_path_new)
         else:
             print(f"[dry run] rename {full_path_old} to {full_path_new}")
 
+# Ensure that the script runs the main function when executed directly
 if __name__ == "__main__":
     main()
