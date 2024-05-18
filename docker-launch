@@ -2,17 +2,29 @@
 
 # Check if the argument (tag) is provided
 if [ -z "$1" ]; then
-  echo "Usage: $0 <tag>"
+  echo "Usage: $0 <tag> [--rebuild]"
+  echo
+  echo "This script checks if a Docker image with the given tag exists."
+  echo "If the image exists, it runs bash on the container."
+  echo "If the image does not exist, it builds the image from <tag>.dockerfile and then runs bash on the container."
+  echo "Optional [--rebuild] flag forcefully rebuilds the image from <tag>.dockerfile even if the image already exists."
   exit 1
 fi
 
 TAG=$1
 
-# Check if the Docker image with the given tag exists
-if ! docker image inspect "dheera:$TAG" > /dev/null 2>&1; then
-  echo "Docker image with tag '$TAG' does not exist. Building it from $TAG.dockerfile..."
+REBUILD=false
+
+# Check for the --rebuild option
+if [ "$2" == "--rebuild" ]; then
+  REBUILD=true
+fi
+
+# Function to build the Docker image
+build_image() {
+  echo "Building Docker image from $TAG.dockerfile..."
   if [ -f "dockerfiles/$TAG.dockerfile" ]; then
-    docker build -t "dheera:$TAG" -f "dockerfiles/$TAG.dockerfile" .
+    docker build -t "docker_launch_$TAG" -f "dockerfiles/$TAG.dockerfile" .
     if [ $? -ne 0 ]; then
       echo "Failed to build Docker image with tag '$TAG'."
       exit 1
@@ -21,14 +33,19 @@ if ! docker image inspect "dheera:$TAG" > /dev/null 2>&1; then
     echo "Dockerfile '$TAG.dockerfile' does not exist."
     exit 1
   fi
+}
+
+# Check if the Docker image with the given tag exists or if rebuild is requested
+if $REBUILD || ! docker image inspect "docker_launch_$TAG" > /dev/null 2>&1; then
+  build_image
 fi
 
-if docker ps | grep -q dheera_$TAG
+if docker ps | grep -q docker_launch_$TAG
 then
-    docker exec -it dheera_$TAG /bin/bash
+    docker exec -it docker_launch_$TAG /bin/bash
 else
     echo "(starting)"
-    docker rm dheera_$TAG 2>/dev/null
+    docker rm docker_launch_$TAG 2>/dev/null
     docker run \
         -e DISPLAY \
         -e DBUS_SESSION_BUS_ADDRESS \
@@ -36,9 +53,9 @@ else
         -v /home/dheera:/home/dheera \
         -v $XAUTHORITY:/root/.Xauthority \
         --net=host \
-        --name dheera_$TAG \
+        --name docker_launch_$TAG \
         --privileged \
         --runtime nvidia \
-        -it dheera:$TAG /bin/bash
+        -it docker_launch_$TAG /bin/bash
 fi
 
