@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Check if the argument (tag) is provided
 if [ -z "$1" ]; then
   echo "Usage: $0 <tag> [--rebuild]"
@@ -23,11 +26,25 @@ fi
 # Function to build the Docker image
 build_image() {
   echo "Building Docker image from $TAG.dockerfile..."
-  if [ -f "dockerfiles/$TAG.dockerfile" ]; then
-    docker build -t "docker_launch_$TAG" -f "dockerfiles/$TAG.dockerfile" .
+  if [ -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" ]; then
+    docker build -t "docker_launch_$TAG" -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" .
     if [ $? -ne 0 ]; then
       echo "Failed to build Docker image with tag '$TAG'."
       exit 1
+    fi
+  else
+    echo "Dockerfile '$TAG.dockerfile' does not exist."
+    exit 1
+  fi
+}
+
+# Function to check if the Dockerfile uses an NVIDIA base image
+uses_nvidia_runtime() {
+  if [ -f "dockerfiles/$TAG.dockerfile" ]; then
+    if grep -qi '^FROM.*nvidia' "dockerfiles/$TAG.dockerfile"; then
+      return 0
+    else
+      return 1
     fi
   else
     echo "Dockerfile '$TAG.dockerfile' does not exist."
@@ -42,20 +59,28 @@ fi
 
 if docker ps | grep -q docker_launch_$TAG
 then
-    docker exec -it docker_launch_$TAG /bin/bash
+  docker exec -it docker_launch_$TAG /bin/bash
 else
-    echo "(starting)"
-    docker rm docker_launch_$TAG 2>/dev/null
-    docker run \
-        -e DISPLAY \
-        -e DBUS_SESSION_BUS_ADDRESS \
-        -v /tmp/.X11-unix:/tmp/.X11-unix \
-        -v /home/dheera:/home/dheera \
-        -v $XAUTHORITY:/root/.Xauthority \
-        --net=host \
-        --name docker_launch_$TAG \
-        --privileged \
-        --runtime nvidia \
-        -it docker_launch_$TAG /bin/bash
+  echo "(starting)"
+  docker rm docker_launch_$TAG 2>/dev/null
+
+  RUNTIME_FLAG=""
+  if uses_nvidia_runtime; then
+    RUNTIME_FLAG="--runtime nvidia"
+  fi
+
+  DOCKER_RUN_CMD="docker run \
+      -e DISPLAY \
+      -e DBUS_SESSION_BUS_ADDRESS \
+      -v /tmp/.X11-unix:/tmp/.X11-unix \
+      -v /home/dheera:/home/dheera \
+      -v $XAUTHORITY:/root/.Xauthority \
+      --net=host \
+      --name docker_launch_$TAG \
+      --privileged \
+      $RUNTIME_FLAG \
+      -it docker_launch_$TAG /bin/bash"
+
+  eval $DOCKER_RUN_CMD
 fi
 
