@@ -43,8 +43,8 @@ build_image() {
 
 # Function to check if the Dockerfile uses an NVIDIA base image
 uses_nvidia_runtime() {
-  if [ -f "dockerfiles/$TAG.dockerfile" ]; then
-    if grep -qi '^FROM.*nvidia' "dockerfiles/$TAG.dockerfile"; then
+  if [ -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" ]; then
+    if grep -qi '^FROM.*nvidia' "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile"; then
       return 0
     else
       return 1
