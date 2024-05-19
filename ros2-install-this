@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Directly installs a single ROS2 package from the package directory
+# to the ROS2 install space without needing to manually create a colcon workspace.
+
+# Example usage:
+# $ source /opt/ros/foxy/setup.bash
+# $ ./ros2-install-this
+
+if [ -z $ROS_DISTRO ]; then
+  echo "Error: ROS_DISTRO is not set. Did you source setup.bash?"
+  exit 1
+fi
+
+if [ ! -f 'package.xml' ]; then
+  echo "Error: No package.xml found. The current directory does not appear to be a ROS2 package."
+  exit 1
+fi
+
+PACKAGE_NAME=$(grep -oPm1 "(?<=<name>)[^<]+" package.xml)
+
+if [ -z $PACKAGE_NAME ]; then
+  echo "Error: Cannot determine name from package.xml. Is package.xml properly written?"
+  exit 1
+fi
+
+ROS2_INSTALL_PATH=$(ros2 pkg prefix $PACKAGE_NAME)
+
+if [ -z $ROS2_INSTALL_PATH ]; then
+  echo "Error: Cannot determine ROS2 install path."
+  exit 1
+fi
+
+TEMP_DIR=$(mktemp -d /tmp/ros2-install-this.XXXXXX)
+
+if [ -z $TEMP_DIR ]; then
+  echo "Error: Error creating temporary dir."
+  exit 1
+fi
+
+echo "Building ..."
+mkdir -p $TEMP_DIR/src/$PACKAGE_NAME
+cp -rv . $TEMP_DIR/src/$PACKAGE_NAME
+source $ROS2_INSTALL_PATH/setup.bash
+cd $TEMP_DIR
+
+colcon build --packages-select $PACKAGE_NAME
+
+echo
+echo "You may now be asked for your sudo password to complete the installation."
+echo "Installation target is: $ROS2_INSTALL_PATH"
+echo
+
+sudo bash -c "source $ROS2_INSTALL_PATH/setup.bash; colcon build --packages-select $PACKAGE_NAME --install-base $ROS2_INSTALL_PATH"
+
+# Done in 2 steps to avoid running the "rm -rf" part as root
+sudo chmod -R 777 $TEMP_DIR/install $TEMP_DIR/build $TEMP_DIR/src
+rm -rf $TEMP_DIR
