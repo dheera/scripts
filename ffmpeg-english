@@ -35,6 +35,12 @@ def main():
     
     task_description = " ".join(sys.argv[1:])
     ffmpeg_command = get_ffmpeg_command(task_description)
+
+    # some basic guardrails
+    assert(ffmpeg_command.startswith("ffmpeg"))
+    assert(";" not in ffmpeg_command)
+    assert("|" not in ffmpeg_command)
+
     print(f"Executing command: {ffmpeg_command} in 2 seconds (^C to cancel)")
     time.sleep(2)
     os.system(command)
