@@ -6,7 +6,6 @@
 
 
 import openai
-import subprocess
 import sys
 import os
 import time
@@ -26,18 +25,8 @@ def get_ffmpeg_command(task_description):
         max_tokens=150,
         temperature=0.5
     )
-    print(response)
     command = response.choices[0].message.content.strip()
     return command
-
-def execute_ffmpeg_command(command):
-    try:
-        print(f"Executing command: {command} in 2 seconds (^C to cancel)")
-        time.sleep(2)
-        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(result.stdout.decode())
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing command: {e.stderr.decode()}", file=sys.stderr)
 
 def main():
     if len(sys.argv) < 2:
@@ -46,7 +35,9 @@ def main():
     
     task_description = " ".join(sys.argv[1:])
     ffmpeg_command = get_ffmpeg_command(task_description)
-    execute_ffmpeg_command(ffmpeg_command)
+    print(f"Executing command: {ffmpeg_command} in 2 seconds (^C to cancel)")
+    time.sleep(2)
+    os.system(command)
 
 if __name__ == "__main__":
     main()
