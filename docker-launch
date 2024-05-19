@@ -2,6 +2,7 @@
 
 # Get the directory of the script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PWD=`pwd`
 
 # Check if the argument (tag) is provided
 if [ -z "$1" ]; then
@@ -27,7 +28,9 @@ fi
 build_image() {
   echo "Building Docker image from $TAG.dockerfile..."
   if [ -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" ]; then
+    cd $SCRIPT_DIR/dockerfiles
     docker build -t "docker_launch_$TAG" -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" .
+    cd $PWD
     if [ $? -ne 0 ]; then
       echo "Failed to build Docker image with tag '$TAG'."
       exit 1
