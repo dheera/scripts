@@ -1,1 +1,0 @@
-echo ${BASH_SOURCE%/*}
