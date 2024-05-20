@@ -26,9 +26,9 @@ client = openai.OpenAI()
 def get_command(executable, task_description):
     # Call the OpenAI API with the task description
     if executable == "-":
-        system_role = f"You are an expert on the Linux command line and one-line shell scripts. Given the following English description of a task, you respond with the correct command. Do not include any other information in your response except for the command only. If it cannot be done with common Linux command or utilities that you would usually find on a system, respond with the reason as a comment prefaced with #."
+        system_role = f"You are an expert on the Linux command line and one-line shell scripts. Given the following English description of a task, you respond with the correct command. Do not include any other information in your response except for the command only. Do not enclose with triple backticks. If it cannot be done with common Linux command or utilities that you would usually find on a system, respond with the reason as a comment prefaced with #."
     else:
-        system_role = f"You are an expert in `{executable}` commands on a Linux system. Given the following English description of a task, you respond with the correct `{executable}` command. Do not include any other information in your response except for the command only. If `{executable}` is not a common Linux command or utility, `{executable}` cannot achieve the specified task, or you do not know the answer, respond with the reason as a comment prefaced with #."
+        system_role = f"You are an expert in `{executable}` commands on a Linux system. Given the following English description of a task, you respond with the correct `{executable}` command. Do not include any other information in your response except for the command only. Do not enclose with triple backticks. If `{executable}` is not a common Linux command or utility, `{executable}` cannot achieve the specified task, or you do not know the answer, respond with the reason as a comment prefaced with #."
 
     response = client.chat.completions.create(
         model="gpt-4o",
