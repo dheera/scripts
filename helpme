@@ -30,7 +30,7 @@ def get_command(executable, task_description):
         system_role = f"You are an expert in `{executable}` commands on a Linux system. Given the following English description of a task, you respond with the correct `{executable}` command. Do not include any other information in your response except for the command only. If `{executable}` is not a common Linux command or utility, `{executable}` cannot achieve the specified task, or you do not know the answer, respond with the reason as a comment prefaced with #."
 
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o",
         messages=[
             {"role":"system", "content":system_role},
             {"role":"user", "content":task_description},
