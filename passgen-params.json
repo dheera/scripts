@@ -5,5 +5,8 @@
   "baidu.com": {"ensure-symbol":false, "length": 14},
   "walmart.com": {"length": 12},
   "eaddservices.edd.ca.gov": {"length": 11, "tail": "!"},
-  "microsoft.com": {"n":3}
+  "microsoft.com": {"n":3},
+  "equifax.com":{"tail":"!", "ensure-symbol": false},
+  "americanexpress.com":{"ensure-symbol": false},
+  "fidelity.com":{"ensure-symbol": false}
 }
