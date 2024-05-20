@@ -16,32 +16,59 @@
 # $ helpme ros2 publish a zero twist to /cmd_vel every 1 second
 # $ helpme - rename all files in the current directory to lowercase
 
-import openai
 import sys
 import os
 import time
 
-# Ensure you have set your OpenAI API key as an environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI()
+SERVICE = ""
+
+# Ensure you have set your OpenAI or Anthropic API key as an environment variable
+if os.getenv("OPENAI_API_KEY"):
+    import openai
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    client = openai.OpenAI()
+    SERVICE = "openai"
+
+elif os.getenv("ANTHROPIC_API_KEY"):
+    import anthropic
+    client = anthropic.Client(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    SERVICE = "anthropic"
+
+else:
+    print("Error: Please set either OPENAI_API_KEY or ANTHROPIC_API_KEY. You can add it to .bashrc e.g.")
+    print("export OPENAI_API_KEY=\"sk-....\"")
+    print("export ANTHROPIC_API_KEY=\"sk-....\"")
+    exit(1)
 
 def get_command(executable, task_description):
     # Call the OpenAI API with the task description
     if executable == "-":
         system_role = f"You are an expert on the Linux command line and one-line shell scripts. Given the following English description of a task, you respond with the correct command. Do not include any other information in your response except for the command only. Do not enclose with triple backticks. If it cannot be done with common Linux command or utilities that you would usually find on a system, respond with the reason as a comment prefaced with #."
     else:
-        system_role = f"You are an expert in `{executable}` commands on a Linux system. Given the following English description of a task, you respond with the correct `{executable}` command. Do not include any other information in your response except for the command only. Do not enclose with triple backticks. If `{executable}` is not a common Linux command or utility, `{executable}` cannot achieve the specified task, or you do not know the answer, respond with the reason as a comment prefaced with #."
+        system_role = f"You are an expert in `{executable}` commands on a Linux system. Given the following English description of a task, you respond with the correct `{executable}` command. Do not include any other information in your response except for the command only. Do not enclose with triple backticks. If `{executable}` is not known to you, `{executable}` cannot achieve the specified task, or you do not know the answer, respond with the reason as a comment prefaced with #."
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role":"system", "content":system_role},
-            {"role":"user", "content":task_description},
-        ],
-        max_tokens=150,
-        temperature=0.0
-    )
-    command = response.choices[0].message.content.strip()
+    if SERVICE == "openai":
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role":"system", "content":system_role},
+                {"role":"user", "content":task_description},
+            ],
+            max_tokens=150,
+            temperature=0.0,
+        )
+        command = response.choices[0].message.content.strip()
+    elif SERVICE == "anthropic":
+        response = client.messages.create(
+            model="claude-3-opus-20240229",
+            system=system_role,
+            messages=[
+                {"role":"user", "content":task_description},
+            ],
+            max_tokens=150,
+            temperature=0.0,
+        )
+        command = response.content[0].text
     return command
 
 def main():
