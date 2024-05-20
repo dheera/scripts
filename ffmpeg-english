@@ -43,7 +43,7 @@ def main():
 
     print(f"Executing command: {ffmpeg_command} in 2 seconds (^C to cancel)")
     time.sleep(2)
-    os.system(command)
+    os.system(ffmpeg_command)
 
 if __name__ == "__main__":
     main()

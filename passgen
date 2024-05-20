@@ -83,8 +83,13 @@ if params['ensure-number']:
 if params['ensure-symbol']:
     password_text[3] = 0x21 + (password_text[0] % 10)
 
+password_text = password_text.decode()
 
-password = password_text.decode()[0:params['length']] + params['tail']
+if "exclude-chars" in params:
+    for char in params["exclude-chars"]:
+        password_text = password_text.replace(char, "")
+
+password = password_text[0:params['length']] + params['tail']
 
 print(password)
 
