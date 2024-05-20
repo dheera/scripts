@@ -1,0 +1,3 @@
+#!/bin/bash
+# this is helpful when a certain infamous country firewall randomly inserts RST packets to try to drop your connections
+sudo iptables -A INPUT -p tcp --tcp-flags RST RST -j DROP

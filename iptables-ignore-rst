@@ -1,2 +1,0 @@
-#!/bin/bash
-sudo iptables -A INPUT -p tcp --tcp-flags RST RST -j DROP
