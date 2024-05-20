@@ -19,7 +19,7 @@ domain = sys.argv[1]
 
 # load parameters for different sites' nitpicks about password requirements
 params = {}
-with open(os.path.dirname(os.path.realpath(__file__)) + '/passgen-params.json', 'r') as f:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'passgen.json'), 'r') as f:
     try:
         params = json.loads(f.read()).get(domain, {})
     except:
