@@ -5,6 +5,7 @@
 # Examples:
 # $ helpme ls list all files in reverse order by size in human friendly units
 # $ helpme dpkg remove packages with i386 architecture
+# $ helpme apt install something to record my screen
 # $ helpme docker run ubuntu 20.04, mount /home into it, and use the host networking
 # $ helpme ffmpeg capture video from /dev/video0 every 1 second and write to .jpg files like img00000.jpg, img00001.jpg, ...
 # $ helpme ffmpeg assemble all the .jpg files into an .mp4 timelapse video at 8fps
@@ -36,7 +37,7 @@ def get_command(executable, task_description):
             {"role":"user", "content":task_description},
         ],
         max_tokens=150,
-        temperature=0.5
+        temperature=0.0
     )
     command = response.choices[0].message.content.strip()
     return command
