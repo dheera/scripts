@@ -60,7 +60,7 @@ def get_command(executable, task_description):
         command = response.choices[0].message.content.strip()
     elif SERVICE == "anthropic":
         response = client.messages.create(
-            model="claude-3-opus-20240229",
+            model="claude-3-sonnet-20240229",
             system=system_role,
             messages=[
                 {"role":"user", "content":task_description},
