@@ -5,7 +5,6 @@ fi
 
 rosdistros=("kinetic" "melodic" "noetic" "foxy" "galactic" "humble" "iron" "rolling")
 for rosdistro in "${rosdistros[@]}"; do
-  echo alias $rosdistro="source /opt/ros/$rosdistro/setup.bash"
   alias $rosdistro="source /opt/ros/$rosdistro/setup.bash"
 done
 
