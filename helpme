@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# AI shell helper
+# By Dheera Venkatraman (https://dheera.net)
+
+# Examples:
+# $ helpme ls list all files in reverse order by size
+# $ helpme ffmpeg capture video from /dev/video0 every 1 second and write to .jpg files like img00000.jpg, img00001.jpg, ...
+# $ helpme ffmpeg assemble all the .jpg files into an .mp4 timelapse video at 8fps
+# $ helpme ffmpeg recompress myvideo.mp4 for web browser use and save the result as myvideo_out.mp4
+# $ helpme convert Resize foo.jpg to 800x800 and center it on a 1200x1200 canvas with a white background and save as a .png file
+
+import openai
+import sys
+import os
+import time
+
+# Ensure you have set your OpenAI API key as an environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI()
+
+def get_command(executable, task_description):
+    # Call the OpenAI API with the task description
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role":"system", "content":f"You are an expert in {executable} commands on a Linux system. Given the following English description of a task, you respond with the correct {executable} command. Do not include any other information in your response except for the command only. If {executable} is not a common Linux command or utility, or you do not know the answer, respond with the reason as a comment prefaced with #."},
+            {"role":"user", "content":task_description},
+        ],
+        max_tokens=150,
+        temperature=0.5
+    )
+    command = response.choices[0].message.content.strip()
+    return command
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: helpme <executable> <task_description>", file=sys.stderr)
+        sys.exit(1)
+    
+    executable = sys.argv[1]
+    print(sys.argv)
+    task_description = " ".join(sys.argv[2:])
+    command = get_command(executable, task_description)
+
+    if command.startswith("#"):
+        print(command.strip("# "), file=sys.stderr)
+        exit(1)
+    else:
+        print(command)
+        if input("Execute this command (y/N)? ") == "y":
+            os.system(command)
+
+if __name__ == "__main__":
+    main()
+
