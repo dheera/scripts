@@ -8,6 +8,5 @@ else
     PS1='\w :) '
 fi
 
-fortune
 echo
 
