@@ -6,8 +6,11 @@
 # $ helpme ls list all files in reverse order by size
 # $ helpme ffmpeg capture video from /dev/video0 every 1 second and write to .jpg files like img00000.jpg, img00001.jpg, ...
 # $ helpme ffmpeg assemble all the .jpg files into an .mp4 timelapse video at 8fps
-# $ helpme ffmpeg recompress myvideo.mp4 for web browser use and save the result as myvideo_out.mp4
+# $ helpme ffmpeg recompress myvideo.mp4 for HTML5-friendly use and save the result as myvideo_out.webm
 # $ helpme convert Resize foo.jpg to 800x800 and center it on a 1200x1200 canvas with a white background and save as a .png file
+# $ helpme dpkg remove packages with i386 architecture
+# $ helpme gs convert nw35.pdf to a jpg files as page0.jpg, page1.jpg, etc. at 600dpi
+# $ helpme - rename all files in the current directory to lowercase
 
 import openai
 import sys
@@ -20,10 +23,15 @@ client = openai.OpenAI()
 
 def get_command(executable, task_description):
     # Call the OpenAI API with the task description
+    if executable == "-":
+        system_role = f"You are an expert on the Linux command line and one-line shell scripts. Given the following English description of a task, you respond with the correct command. Do not include any other information in your response except for the command only. If it cannot be done with common Linux command or utilities that you would usually find on a system, respond with the reason as a comment prefaced with #."
+    else:
+        system_role = f"You are an expert in `{executable}` commands on a Linux system. Given the following English description of a task, you respond with the correct `{executable}` command. Do not include any other information in your response except for the command only. If `{executable}` is not a common Linux command or utility, `{executable}` cannot achieve the specified task, or you do not know the answer, respond with the reason as a comment prefaced with #."
+
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role":"system", "content":f"You are an expert in {executable} commands on a Linux system. Given the following English description of a task, you respond with the correct {executable} command. Do not include any other information in your response except for the command only. If {executable} is not a common Linux command or utility, or you do not know the answer, respond with the reason as a comment prefaced with #."},
+            {"role":"system", "content":system_role},
             {"role":"user", "content":task_description},
         ],
         max_tokens=150,
@@ -38,7 +46,6 @@ def main():
         sys.exit(1)
     
     executable = sys.argv[1]
-    print(sys.argv)
     task_description = " ".join(sys.argv[2:])
     command = get_command(executable, task_description)
 
