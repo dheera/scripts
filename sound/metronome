@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
   exit()
 
 speed = int(sys.argv[1])
-wave_obj = simpleaudio.WaveObject.from_wave_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), "sounds/tick.wav"))
+wave_obj = simpleaudio.WaveObject.from_wave_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets/tick.wav"))
 
 def tick():
     global wave_obj
