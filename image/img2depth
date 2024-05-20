@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import argparse
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+import numpy as np
+import os
+
+# Function to load the MiDaS model based on the model type
+def load_midas_model(model_type):
+    model = torch.hub.load("intel-isl/MiDaS", model_type)
+    model.to(device)
+    model.eval()
+    
+    transform = torch.hub.load("intel-isl/MiDaS", "transforms")
+    if model_type in ["DPT_Large", "DPT_Hybrid"]:
+        transform = transform.dpt_transform
+    else:
+        transform = transform.small_transform
+    
+    return model, transform
+
+# Function to load an image and prepare it for the model
+def load_image(image_path, transform):
+    img = Image.open(image_path).convert("RGB")
+    img = transform(img).unsqueeze(0)
+    return img.to(device)
+
+# Function to convert the output to a depth map and save it
+def process_output(output, output_path):
+    output = output.squeeze().cpu().numpy()
+    output = (255 * (output - np.min(output)) / (np.max(output) - np.min(output))).astype(np.uint8)
+    depth_map = Image.fromarray(output)
+    depth_map.save(output_path)
+
+# Main function to parse arguments and run the depth estimation
+def main():
+    parser = argparse.ArgumentParser(description="Generate a depth map from an input image using MiDaS.")
+    parser.add_argument("input_image", type=str, help="Path to the input image.")
+    parser.add_argument("--output_image", type=str, help="Path to save the output depth map. If not specified, the input filename will be modified to create a default output filename.")
+    parser.add_argument("--model_type", type=str, choices=["DPT_Large", "DPT_Hybrid", "MiDaS_small"], default="DPT_Large", help="The type of MiDaS model to use. Options are: DPT_Large, DPT_Hybrid, MiDaS_small. Default is DPT_Large.")
+    
+    args = parser.parse_args()
+
+    input_image = args.input_image
+    output_image = args.output_image
+    model_type = args.model_type
+
+    if not output_image:
+        base, ext = os.path.splitext(input_image)
+        output_image = f"{base}_depth{ext}"
+
+    # Load the MiDaS model and transform
+    model, transform = load_midas_model(model_type)
+
+    # Load and process the input image
+    img = load_image(input_image, transform)
+
+    # Run the image through the model
+    with torch.no_grad():
+        prediction = model(img)
+
+    # Convert the output to a depth map and save it
+    process_output(prediction, output_image)
+
+    print(f"Depth map saved as {output_image}")
+
+if __name__ == "__main__":
+    # Device configuration
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    main()
