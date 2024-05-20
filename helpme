@@ -12,6 +12,7 @@
 # $ helpme ffmpeg recompress myvideo.mp4 for HTML5-friendly use and save the result as myvideo_out.webm
 # $ helpme convert Resize foo.jpg to 800x800 and center it on a 1200x1200 canvas with a white background and save as a .png file
 # $ helpme gs convert somefile.pdf to a jpg files as page0.jpg, page1.jpg, etc. at 600dpi
+# $ helpme inkscape export foo.svg to .eps and convert text to paths
 # $ helpme - rename all files in the current directory to lowercase
 
 import openai
