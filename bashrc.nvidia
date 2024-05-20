@@ -1,7 +1,0 @@
-# stuff that nvidia's installers should automatically do but no, they want us to fail, look things up
-# on stackoverflow, and do more work
-
-alias nvidia-digits="nvidia-docker run --name digits -d -p 5000:5000 nvidia/digits"
-
-export LD_LIBRARY_PATH=/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/:$LD_LIBRARY_PATH
-export PATH=/usr/local/cuda/bin:$PATH
