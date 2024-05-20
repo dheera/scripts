@@ -24,13 +24,35 @@ SERVICE = ""
 
 # Ensure you have set your OpenAI or Anthropic API key as an environment variable
 if os.getenv("OPENAI_API_KEY"):
-    import openai
+    try:
+        import openai
+    except ImportError:
+        # try harder, this is AI after all
+        print("I found an OpenAI API key, but you need to run `pip3 install openai`.")
+        if input("Should I run it for you (y/N)? ") == "y":
+            os.system("pip3 install openai")
+            import openai
+        else:
+            print("Aborted")
+            exit(1)
+
+
     openai.api_key = os.getenv("OPENAI_API_KEY")
     client = openai.OpenAI()
     SERVICE = "openai"
 
 elif os.getenv("ANTHROPIC_API_KEY"):
-    import anthropic
+    try:
+        import anthropic
+    except ImportError:
+        # try harder, this is AI after all
+        print("I found an Anthropic API key, but you need to run `pip3 install anthropic`.")
+        if input("Should I run it for you (y/N)? ") == "y":
+            os.system("pip3 install anthropic")
+            import anthropic
+        else:
+            print("Aborted")
+            exit(1)
     client = anthropic.Client(api_key=os.getenv("ANTHROPIC_API_KEY"))
     SERVICE = "anthropic"
 
