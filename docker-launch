@@ -1,5 +1,29 @@
 #!/bin/bash
 
+# I use this script to quickly launch into docker environments with my
+# home directory mounted, without fussing with docker command line args.
+# (a) test things under different ROS releases quickly
+# (b) stronger containerization than conda
+# (c) maintain consistent, reproducible dev environments
+# (d) stably work on things that require Ubuntu LTS releases so that i can run cutting-edge releases for my desktop itself
+# (e) automatically use --runtime-nvidia if necessary
+# (f) probably more things in the future
+# 
+# This script will check if the image has already been launched, and if so, just run a shell in it. This allows me
+# to keep docker-launching from multiple terminal windows and it will keep using the same container.
+#
+# The dockerfiles for all of these containers are in dockerfiles/
+#
+# For example, when working on machine learning stuff I just do
+# $ docker-launch ml
+# 
+# And then when working on machine learning stuff on a CPU-only machine I just do
+# $ docker-launch mlcpu
+#
+# When I need to test something on an older ROS release on my shiny new Ubuntu desktop I can just do
+# $ docker-launch melodic
+#
+
 # Get the directory of the script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PWD=`pwd`
