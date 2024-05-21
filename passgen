@@ -6,7 +6,12 @@
 # It will prompt you for your master password, and then your site-specific password will be printed.
 #
 # the rough algorithm is PBKDF_HMAC_SHA256( master_password + "/" + domain_of_website )
-# which should be secure
+# which should be secure.
+#
+# By default it truncates the password to a reasonable length (most websites won't accept passwords that long)
+# And it transforms the first 4 characters into an uppercase, lowercase, number, and symbol, respectively,
+# which will satisfy the requirements of 99% of websites. For websites that have other weird requirements, or
+# specifically ban symbols, etc. you can disable or modify this behavior on a site-specific basis (see below)
 #
 # the only stateless parts are:
 #
