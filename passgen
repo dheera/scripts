@@ -2,7 +2,7 @@
 
 # my (almost) state-less password manager
 
-import hashlib, os, re, sys, base64, time, json
+import hashlib, os, re, sys, base64, time, yaml
 
 script_path = os.path.realpath(__file__)
 
@@ -19,9 +19,9 @@ domain = sys.argv[1]
 
 # load parameters for different sites' nitpicks about password requirements
 params = {}
-with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'passgen.json'), 'r') as f:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'passgen.yaml'), 'r') as f:
     try:
-        params = json.loads(f.read()).get(domain, {})
+        params = yaml.safe_load(f.read()).get(domain, {})
     except:
         print("Error loading params")
 

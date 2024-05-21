@@ -1,0 +1,24 @@
+americanexpress.com:
+  ensure-symbol: false
+baidu.com:
+  ensure-symbol: false
+  length: 14
+eaddservices.edd.ca.gov:
+  length: 11
+  tail: '!'
+equifax.com:
+  ensure-symbol: false
+  tail: '!'
+facebook.com:
+  n: 2
+fidelity.com:
+  ensure-symbol: false
+microsoft.com:
+  n: 3
+usps.com:
+  ensure-symbol: false
+walmart.com:
+  length: 12
+yahoo.com:
+  n: 2
+
