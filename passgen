@@ -33,7 +33,7 @@ try:
   from getpass import getpass
 except ImportError:
   # stop complaining and try harder
-  os.system("sudo pip3 install getpass")
+  os.system("pip3 install getpass")
   from getpass import getpass
 
 # domain name in question, e.g. google.com
