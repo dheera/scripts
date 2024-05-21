@@ -19,18 +19,26 @@ domain = sys.argv[1]
 
 # load parameters for different sites' nitpicks about password requirements
 params = {}
-with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'passgen.yaml'), 'r') as f:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'passgen.site.yaml'), 'r') as f:
     try:
         params = yaml.safe_load(f.read()).get(domain, {})
     except:
-        print("Error loading params")
+        print("Error loading passgen.site.yaml")
+
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'passgen.user.yaml'), 'r') as f:
+    try:
+        params_user = yaml.safe_load(f.read()).get(domain, {})
+    except:
+        print("Error loading passgen.user.yaml")
 
 # have user input master password
 master_password = getpass()
 
 # nth password used on site
-if 'n' not in params:
+if 'n' not in params_user:
   params['n'] = 0
+else:
+  params['n'] = params_user['n']
 
 # tack this onto the end of a password
 # useful if a site requires a use of a particular restricted set of symbols

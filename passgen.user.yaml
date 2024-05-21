@@ -1,0 +1,9 @@
+# user-specific config
+# no longer updating on github, for reference only
+
+facebook.com:
+  n: 5
+microsoft.com:
+  n: 2
+
+# ...

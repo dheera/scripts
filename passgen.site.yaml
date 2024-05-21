@@ -1,3 +1,7 @@
+# site-specific config
+# this file keeps track of weird, stupid password requirements
+# e.g. must be less than N characters, must include one of [$, #, !], must not include 'a', must not have a symbol, etc.
+
 americanexpress.com:
   ensure-symbol: false
 baidu.com:
@@ -9,16 +13,10 @@ eaddservices.edd.ca.gov:
 equifax.com:
   ensure-symbol: false
   tail: '!'
-facebook.com:
-  n: 2
 fidelity.com:
   ensure-symbol: false
-microsoft.com:
-  n: 3
 usps.com:
   ensure-symbol: false
 walmart.com:
   length: 12
-yahoo.com:
-  n: 2
 
