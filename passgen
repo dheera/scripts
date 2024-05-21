@@ -1,6 +1,23 @@
 #!/usr/bin/env python3
 
 # my (almost) state-less password manager
+#
+# usage: passgen <domain_of_website>
+# It will prompt you for your master password, and then your site-specific password will be printed.
+#
+# the rough algorithm is PBKDF_HMAC_SHA256( master_password + "/" + domain_of_website )
+# which should be secure
+#
+# the only stateless parts are:
+#
+# * a site-specific config that describes weird password requirements of various
+#   websites so that the password-generator can adjust the password to meet those
+#   requirements, (passgen.site.yaml) -- this can be publicly stored
+#
+# * a user-specific config that stores the Nth password used on a website -- this can
+#   be theoretically publicly stored, though out of precaution i'd throw it on a cloud
+#   storage somewhere
+#
 
 import hashlib, os, re, sys, base64, time, yaml
 
