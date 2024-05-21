@@ -1,3 +1,0 @@
-simplejpeg
-tornado
-pillow

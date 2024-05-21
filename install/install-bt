@@ -1,7 +1,0 @@
-#!/bin/bash
-sudo add-apt-repository ppa:berglh/pulseaudio-a2dp
-sudo apt update
-sudo apt install pulseaudio-modules-bt libldac
-
-pulseaudio -k
-pulseaudio --start
