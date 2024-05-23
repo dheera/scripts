@@ -1,0 +1,33 @@
+RUN DEBIAN_FRONTEND=noninteractive apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    ffmpeg \
+    git \
+    git-lfs \
+    graphicsmagick \
+    htop \
+    iftop \
+    jq \
+    libx264-dev \
+    libopus-dev \
+    libvpx-dev \
+    nethogs \
+    python3-pip \
+    screen \
+    stress \
+    vim \
+    wget
+
+RUN pip3 install \
+    anthropic \
+    aiortc \
+    boto3 \
+    botocore \
+    numpy \
+    openai \
+    orjson \
+    opencv-python \
+    scipy \
+    tqdm \
+    tornado \
+    pyyaml

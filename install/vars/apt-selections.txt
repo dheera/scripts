@@ -1,6 +1,7 @@
 chromium-browser
 curl
 docker.io
+docker-buildx
 exfat-fuse
 flameshot
 gimp
@@ -8,6 +9,7 @@ htop
 iftop
 inkscape
 ipython3
+jq
 libimage-exiftool-perl
 links
 nethogs

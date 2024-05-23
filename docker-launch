@@ -53,7 +53,7 @@ build_image() {
   echo "Building Docker image from $TAG.dockerfile..."
   if [ -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" ]; then
     cd $SCRIPT_DIR/dockerfiles
-    docker build -t "docker_launch_$TAG" -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" .
+    DOCKER_BUILDKIT=1 docker build -t "docker_launch_$TAG" -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" .
     cd $PWD
     if [ $? -ne 0 ]; then
       echo "Failed to build Docker image with tag '$TAG'."
