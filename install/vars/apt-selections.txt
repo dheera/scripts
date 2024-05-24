@@ -1,10 +1,12 @@
 chromium-browser
 curl
+dconf-editor
 docker.io
 docker-buildx
 exfat-fuse
 flameshot
 gimp
+gnome-tweaks
 htop
 iftop
 inkscape
