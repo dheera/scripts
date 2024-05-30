@@ -91,23 +91,35 @@ else
   echo "(starting)"
   docker rm docker_launch_$TAG 2>/dev/null
 
-  RUNTIME_FLAG=""
+  RUNTIME_OPTIONS=""
   if uses_nvidia_runtime; then
-    RUNTIME_FLAG="--runtime nvidia"
+    RUNTIME_OPTIONS="--runtime nvidia"
+  fi
+ 
+  PLATFORM_OPTIONS="" 
+  if [[ "$OSTYPE" == linux-gnu* ]]; then
+      PLATFORM_OPTIONS="\
+       -v $XAUTHORITY:/root/.Xauthority"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+      PLATFORM_OPTIONS=""
+  else
+      echo "Unknown operating system: $OSTYPE"
   fi
 
   DOCKER_RUN_CMD="docker run \
-      -e DISPLAY \
+      -e DISPLAY=host.docker.internal:0 \
       -e DBUS_SESSION_BUS_ADDRESS \
       -v /tmp/.X11-unix:/tmp/.X11-unix \
-      -v /home/dheera:/home/dheera \
-      -v $XAUTHORITY:/root/.Xauthority \
+      -v $HOME:$HOME \
       --net=host \
       --name docker_launch_$TAG \
       --privileged \
-      $RUNTIME_FLAG \
+      $PLATFORM_OPTIONS \
+      $RUNTIME_OPTIONS \
+      -d \
       -it docker_launch_$TAG /bin/bash"
 
   eval $DOCKER_RUN_CMD
+  docker exec -it docker_launch_$TAG /bin/bash
 fi
 
