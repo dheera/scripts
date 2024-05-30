@@ -1,3 +1,5 @@
 #!/bin/bash
 
+# Poor man's one time NTP time sync
+
 telnet time-a.timefreq.bldrdoc.gov 13 2>/dev/null | tail -1 | awk '{print $3}' | xargs sudo date -s
