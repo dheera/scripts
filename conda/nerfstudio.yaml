@@ -324,4 +324,7 @@ dependencies:
       - xxhash==3.4.1
       - yourdfpy==0.0.56
       - zipp==3.19.1
+variables:
+  CXX: /usr/bin/g++-11
+  CC: /usr/bin/gcc-11
 prefix: /home/dheera/miniconda3/envs/nerfstudio
