@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 
-import cv2
+try:
+    import PIL.Image
+    __imglib__ = "pil"
+except ImportError:
+    import cv2
+    __imglib__ = "cv2"
+
 import os
-import numpy
+import numpy as np
 import sys
 import time
 import termgraphics
@@ -13,19 +19,28 @@ if __name__ == "__main__":
         print("Usage: imgcat somefile.jpg")
         sys.exit(0)
 
-    IMAGE = sys.argv[1]
-    img = cv2.imread(IMAGE)
-
     g = termgraphics.TermGraphics()
 
-    if img is None:
-        print("No image read.")
-        exit()
+    img_path = sys.argv[1]
 
-    resize_ratio = g.shape[0] / img.shape[1]
-    w = int(img.shape[1] * resize_ratio * 0.50)
-    h = int(img.shape[0] * resize_ratio * 0.25)
-    resized_img = cv2.resize(img, (w, h))[:,:,::-1]
-    g.image(numpy.reshape(resized_img, (w*h, 3)).tolist(), w, h, (0, 0), image_type = termgraphics.IMAGE_RGB_2X4)
+    if __imglib__ == "pil":
+        img = PIL.Image.open(img_path) 
+        resize_ratio = g.shape[0] / img.size[0]
+        w = int(img.size[0] * resize_ratio * 0.50)
+        h = int(img.size[1] * resize_ratio * 0.25)
+        img = np.array(img.resize((w, h)))
+
+    elif __imglib__ == "cv2":
+        img = cv2.imread(img_path)
+        if img is None:
+            print("No image read.")
+            exit()
+
+        resize_ratio = g.shape[0] / img.shape[1]
+        w = int(img.shape[1] * resize_ratio * 0.50)
+        h = int(img.shape[0] * resize_ratio * 0.25)
+        img = cv2.resize(img, (w, h))[:,:,::-1]
+
+    g.image(np.reshape(img, (w*h, 3)).tolist(), w, h, (0, 0), image_type = termgraphics.IMAGE_RGB_2X4)
     g.draw()
 
