@@ -21,7 +21,7 @@ ipython3
 jq
 libimage-exiftool-perl
 links
-lmsensors
+lm-sensors
 mplayer
 mpv
 nethogs
