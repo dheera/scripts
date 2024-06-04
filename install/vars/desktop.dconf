@@ -1,0 +1,47 @@
+[/org/gnome/shell/extensions/dash-to-panel/]
+animate-appicon-hover=true
+animate-appicon-hover-animation-extent={'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}
+animate-appicon-hover-animation-travel={'SIMPLE': 0.0, 'RIPPLE': 0.40000000000000002, 'PLANK': 0.0}
+animate-appicon-hover-animation-zoom={'SIMPLE': 1.5, 'RIPPLE': 1.25, 'PLANK': 2.0}
+appicon-margin=8
+appicon-padding=6
+available-monitors=[0]
+dot-color-dominant=false
+dot-color-override=false
+dot-position='RIGHT'
+dot-style-focused='SQUARES'
+dot-style-unfocused='SQUARES'
+focus-highlight=true
+focus-highlight-dominant=true
+focus-highlight-opacity=25
+hotkeys-overlay-combo='TEMPORARILY'
+leftbox-padding=-1
+leftbox-size=0
+multi-monitors=false
+panel-anchors='{"0":"MIDDLE","1":"MIDDLE"}'
+panel-element-positions='{"0":[{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"showAppsButton","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":false,"position":"stackedBR"}]}'
+panel-lengths='{"0":100,"1":100}'
+panel-positions='{"0":"BOTTOM"}'
+panel-sizes='{"0":48,"1":48}'
+primary-monitor=0
+show-apps-icon-file=''
+status-icon-padding=12
+trans-panel-opacity=0.0
+trans-use-custom-opacity=true
+trans-use-dynamic-opacity=false
+tray-padding=12
+tray-size=18
+window-preview-title-position='TOP'
+
+[/org/gnome/desktop/interface/]
+color-scheme='prefer-dark'
+gtk-theme='Yaru-purple-dark'
+icon-theme='Yaru-purple'
+show-battery-percentage=false
+
+[/org/gnome/desktop/input-sources/]
+mru-sources=[('xkb', 'us+dvorak'), ('ibus', 'libpinyin')]
+sources=[('xkb', 'us+dvorak'), ('ibus', 'libpinyin')]
+xkb-options=['caps:ctrl_modifier']
+
+
