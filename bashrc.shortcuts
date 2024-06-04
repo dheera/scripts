@@ -1,3 +1,4 @@
 alias venv.create='virtualenv --system-site-packages -p python3'
 alias copy='xclip -selection c'
 alias apt-got='dpkg --get-selections'
+alias v='mpv --vo=tct --keep-open=yes'
