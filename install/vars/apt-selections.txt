@@ -1,12 +1,12 @@
 chromium-browser
 curl
 dconf-editor
-docker.io
 docker-buildx
+docker.io
 exfat-fuse
 flameshot
-gcc-11
 g++-11
+gcc-11
 gimp
 gnome-tweaks
 htop
@@ -16,9 +16,11 @@ ipython3
 jq
 libimage-exiftool-perl
 links
+mpv
 nethogs
 rclone
 screen
+scribus
 vim
 wget
 xautomation
