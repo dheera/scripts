@@ -1,0 +1,49 @@
+[/org/gnome/shell/extensions/dash-to-panel/]
+animate-appicon-hover=true
+animate-appicon-hover-animation-convexity={'RIPPLE': 2.0, 'PLANK': 1.0, 'SIMPLE': 0.0}
+animate-appicon-hover-animation-extent={'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}
+animate-appicon-hover-animation-travel={'SIMPLE': 0.10000000000000001, 'RIPPLE': 0.40000000000000002, 'PLANK': 0.0}
+animate-appicon-hover-animation-type='SIMPLE'
+animate-appicon-hover-animation-zoom={'SIMPLE': 1.2, 'RIPPLE': 1.25, 'PLANK': 2.0}
+appicon-margin=2
+appicon-padding=10
+available-monitors=[0]
+dot-position='LEFT'
+dot-style-focused='SQUARES'
+dot-style-unfocused='SQUARES'
+focus-highlight=true
+focus-highlight-dominant=true
+focus-highlight-opacity=20
+hot-keys=false
+hotkeys-overlay-combo='TEMPORARILY'
+leftbox-padding=-1
+panel-anchors='{"0":"MIDDLE"}'
+panel-element-positions='{"0":[{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"showAppsButton","visible":true,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"desktopButton","visible":false,"position":"stackedBR"}]}'
+panel-lengths='{"0":100}'
+panel-positions='{"0":"LEFT"}'
+panel-sizes='{"0":64}'
+primary-monitor=0
+show-apps-icon-file=''
+show-apps-icon-side-padding=4
+status-icon-padding=8
+stockgs-keep-dash=false
+stockgs-keep-top-panel=false
+trans-panel-opacity=0.40000000000000002
+trans-use-custom-gradient=false
+trans-use-custom-opacity=true
+tray-padding=-1
+tray-size=16
+window-preview-title-position='TOP'
+
+[/org/gnome/desktop/interface/]
+color-scheme='prefer-dark'
+gtk-theme='Yaru-purple-dark'
+icon-theme='Yaru-purple'
+show-battery-percentage=false
+
+[/org/gnome/desktop/input-sources/]
+mru-sources=[('xkb', 'us+dvorak'), ('ibus', 'libpinyin')]
+sources=[('xkb', 'us+dvorak'), ('ibus', 'libpinyin')]
+xkb-options=['caps:ctrl_modifier']
+
+
