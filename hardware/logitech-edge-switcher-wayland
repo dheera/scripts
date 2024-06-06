@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+import json
+import os
+#import pyautogui
+import time
+
+import tkinter as tk
+from pynput import mouse
+
+
+#pyautogui.FAILSAFE = False
+
+config_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logitech-edge-switcher.json")
+hostname = os.uname().nodename.split(".")[0]
+
+with open(config_filename, "r") as f:
+    config = json.loads(f.read())
+
+if hostname not in config:
+    print("hostname %s not found in config" % hostname)
+    exit(1)
+
+config_host = config[hostname]
+
+def on_enter_left(event):
+    print("left")
+    for i in range(5):
+        for cmd in config_host['left']:
+            os.system(cmd)
+
+def on_enter_right(event):
+    print("right")
+    for i in range(5):
+        for cmd in config_host['right']:
+            os.system(cmd)
+
+def on_enter_top(event):
+    print("top")
+    for i in range(5):
+        for cmd in config_host['top']:
+            os.system(cmd)
+
+def on_enter_bottom(event):
+    print("bottom")
+    for i in range(5):
+        for cmd in config_host['bottom']:
+            os.system(cmd)
+
+if 'left' in config_host:
+    print("adding window for left")
+    root = tk.Tk()
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    root.geometry("1x%s+0+0" % (screen_height - 48))  # 1 pixel wide, full screen height, positioned at the left edge of the screen
+    root.configure(bg='black')  # Set the background color to black
+    root.bind("<Enter>", on_enter_left)
+    root.call('wm', 'attributes', '.', '-topmost', '1')
+    root.mainloop()
+
+if 'right' in config_host:
+    print("adding window for right")
+    root = tk.Tk()
+    root.geometry("1x%s+0+%s" % (screen_height - 48, screen_width -1))  # 1 pixel wide, full screen height, positioned at the left edge of the screen
+    root.configure(bg='black')  # Set the background color to black
+    root.bind("<Enter>", on_enter_right)
+    root.call('wm', 'attributes', '.', '-topmost', '1')
+    root.mainloop()
+
+if 'top' in config_host:
+    print("adding window for top")
+    root = tk.Tk()
+    root.geometry("%sx1+0+0" % (screen_width - 48))  # 1 pixel wide, full screen height, positioned at the left edge of the screen
+    root.configure(bg='black')  # Set the background color to black
+    root.bind("<Enter>", on_enter_top)
+    root.call('wm', 'attributes', '.', '-topmost', '1')
+    root.mainloop()
+
+if 'bottom' in config_host:
+    print("adding window for bottom")
+    root = tk.Tk()
+    root.geometry("%sx1+0+%s" % (screen_width - 48, screen_height - 1))  # 1 pixel wide, full screen height, positioned at the left edge of the screen
+    root.configure(bg='black')  # Set the background color to black
+    root.bind("<Enter>", on_enter_bottom)
+    root.call('wm', 'attributes', '.', '-topmost', '1')
+    root.mainloop()
