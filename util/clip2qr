@@ -48,4 +48,18 @@ def show_image(img):
 current = pyperclip.paste()
 show_qr(current)
 
+# TODO: configure this
+#/org/gnome/settings-daemon/plugins/media-keys/calculator
+#  unset
+
+## /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/binding
+#  'Calculator'
+#/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/command
+#  '/home/dheera/bin/scripts/util/clip2qr'
+#/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/name
+#  '/home/dheera/bin/scripts/util/clip2qr'
+
+#/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings
+#  ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+
 
