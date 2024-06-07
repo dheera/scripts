@@ -7,10 +7,7 @@ import threading
 from tkinter import Toplevel, Tk, Label, PhotoImage
 
 
-def on_change(value):
-    if not value.startswith("http"):
-        return
-    print(value)
+def show_qr(value):
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -19,6 +16,7 @@ def on_change(value):
     )
     qr.add_data(value)
     img = qr.make_image(back_color=(255,255,255), fill_color=(0,0,0))
+    img = img.resize((1024, 1024))
     img.save("/tmp/qr.png")
     show_image("/tmp/qr.png")
 
@@ -27,9 +25,13 @@ def show_image(img):
     
     win.attributes('-alpha', 0.8)
     win.iconify()
+    screen_width = win.winfo_screenwidth()
+    screen_height = win.winfo_screenheight()
     
     window = Toplevel(win)
-    window.geometry("470x470+100+100")
+    x = screen_width // 2 - 512
+    y = screen_height // 2 - 512
+    window.geometry(f"1024x1024+{x}+{y}")
     window.overrideredirect(1)
     
     photo = PhotoImage(file=img)
@@ -41,13 +43,7 @@ def show_image(img):
 
     win.mainloop()
 
-last = ""
-
-while True:
-    current = pyperclip.paste()
-    if current != last:
-        on_change(current)
-    last = current
-    time.sleep(1)
+current = pyperclip.paste()
+show_qr(current)
 
 
