@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+# This script takes whatever is in the clipboard and displays it on screen as a QR code on screen
+# Useful for copying URL from browser and scanning it with your phone
+
 import pyperclip
 import time
 import qrcode
 import threading
 from tkinter import Toplevel, Tk, Label, PhotoImage
-
 
 def show_qr(value):
     qr = qrcode.QRCode(
@@ -16,7 +18,7 @@ def show_qr(value):
     )
     qr.add_data(value)
     img = qr.make_image(back_color=(255,255,255), fill_color=(0,0,0))
-    img = img.resize((1024, 1024))
+    img = img.resize((960, 960))
     img.save("/tmp/qr.png")
     show_image("/tmp/qr.png")
 
@@ -29,9 +31,9 @@ def show_image(img):
     screen_height = win.winfo_screenheight()
     
     window = Toplevel(win)
-    x = screen_width // 2 - 512
-    y = screen_height // 2 - 512
-    window.geometry(f"1024x1024+{x}+{y}")
+    x = screen_width // 2 - 960 // 2
+    y = screen_height // 2 - 960 // 2
+    window.geometry(f"960x960+{x}+{y}")
     window.overrideredirect(1)
     
     photo = PhotoImage(file=img)
