@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import pyperclip
+import time
+import qrcode
+import threading
+from tkinter import Toplevel, Tk, Label, PhotoImage
+
+
+def on_change(value):
+    if not value.startswith("http"):
+        return
+    print(value)
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=5,
+    )
+    qr.add_data(value)
+    img = qr.make_image(back_color=(255,255,255), fill_color=(0,0,0))
+    img.save("/tmp/qr.png")
+    show_image("/tmp/qr.png")
+
+def show_image(img):
+    win = Tk()
+    
+    win.attributes('-alpha', 0.8)
+    win.iconify()
+    
+    window = Toplevel(win)
+    window.geometry("470x470+100+100")
+    window.overrideredirect(1)
+    
+    photo = PhotoImage(file=img)
+    
+    label = Label(window, image=photo)
+    label.pack()
+
+    win.after(10000,lambda:win.destroy())
+
+    win.mainloop()
+
+last = ""
+
+while True:
+    current = pyperclip.paste()
+    if current != last:
+        on_change(current)
+    last = current
+    time.sleep(1)
+
+
