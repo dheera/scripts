@@ -17,8 +17,13 @@ import os
 import random
 import string
 from urllib.parse import urlparse, parse_qs
+import PIL.Image
 
-def show_qr_url(url):
+def get_qr(url:str, size:int = 960):
+    """
+    input: url as str
+    output: PIL.Image of QR
+    """
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -27,91 +32,84 @@ def show_qr_url(url):
     )
     qr.add_data(url)
     img = qr.make_image(back_color=(255,255,255), fill_color=(0,0,0))
-    img = img.resize((960, 960))
-    img.save("/tmp/qr.png")
-    show_image("/tmp/qr.png")
+    img = img.resize((size, size))
+    return img
 
-def show_image(img):
+def show_image(img: PIL.Image):
+    img.save("/tmp/clip2qr.png")
+
     win = Tk()
-    
     win.attributes('-alpha', 0.8)
     win.iconify()
     screen_width = win.winfo_screenwidth()
     screen_height = win.winfo_screenheight()
     
     window = Toplevel(win)
-    x = screen_width // 2 - 960 // 2
-    y = screen_height // 2 - 960 // 2
-    window.geometry(f"960x960+{x}+{y}")
+    x = screen_width // 2 - img.size[0]// 2
+    y = screen_height // 2 - img.size[1] // 2
+    window.geometry(f"{img.size[0]}x{img.size[1]}+{x}+{y}")
     window.overrideredirect(1)
     
-    photo = PhotoImage(file=img)
-    
+    photo = PhotoImage(file="/tmp/clip2qr.png")
     label = Label(window, image=photo)
     label.focus_set()
-    label.bind("<Key>", lambda event: (win.destroy(), stop_server()))
-    label.bind("<Button-1>", lambda event: (win.destroy(), stop_server()))
+    label.bind("<Key>", lambda event: (win.destroy(), server.stop()))
+    label.bind("<Button-1>", lambda event: (win.destroy(), server.stop()))
     label.pack()
 
-    win.after(30000,lambda: (win.destroy(), stop_server()))
-
+    win.after(30000, lambda: (win.destroy(), stop_server()))
     win.mainloop()
 
-directory = ""
-password = ""
-filename = ""
-httpd = None
-ip =(([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["no IP found"])[0]
+server = None
 
-class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=directory, **kwargs)
+class FileServer(object):
+    def __init__(self, file_path, port = 7777):
+        self.directory, self.filename = file_path.rsplit("/", 1)
+        self.password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+        self.ip =(([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["no IP found"])[0]
+        self.url = f"http://{self.ip}:7777/{self.filename}?password={self.password}"
+        self.port = port
+        self.httpd = None
+
+    def _get_request_handler(self, directory, filename, password):
+        class RequestHandler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, directory=directory, **kwargs)
     
-    def do_GET(self):
-        parsed_path = urlparse(self.path)
-        query_params = parse_qs(parsed_path.query)
-        if parsed_path.path == f'/{filename}' and query_params.get('password', [None])[0] == password:
-            super().do_GET()
-        else:
-            self.send_error(404, "File Not Found")
+            def do_GET(self):
+                parsed_path = urlparse(self.path)
+                query_params = parse_qs(parsed_path.query)
+                if parsed_path.path == f'/{filename}' and query_params.get('password', [None])[0] == password:
+                    super().do_GET()
+                else:
+                    self.send_error(404, "File Not Found")
+        return RequestHandler
 
-def get_url(file_path):
-    url = f"http://{ip}:7777/{filename}?password={password}"
-    return url
+    def start(self):
+        handler = self._get_request_handler(self.directory, self.filename, self.password)
+        socketserver.TCPServer.allow_reuse_address = True
+        self.httpd = socketserver.TCPServer(("", self.port), handler)
+        print(f"Serving {self.filename} at {self.url}")
+        self.httpd.serve_forever()
 
-def start_server(file_path):
-    global password, directory, filename, ip, httpd
-    handler = MyHttpRequestHandler
-    port = 7777
-    socketserver.TCPServer.allow_reuse_address = True
-    directory, filename = file_path.rsplit("/", 1)
-    password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-    url = get_url(file_path)
-
-    httpd = socketserver.TCPServer(("", port), handler)
-    print(f"Serving {filename} at {url}")
-    #server_shutdown_thread = threading.Thread(target=stop_server, args=(httpd,))
-    #server_shutdown_thread.start()
-    httpd.serve_forever()
-
-def stop_server():
-    global httpd
-    #time.sleep(30)
-    if httpd:
-        print("Stopping server...")
-        httpd.shutdown()
+    def stop(self):
+        if self.httpd:
+            print("Stopping server...")
+            self.httpd.shutdown()
 
 def main():
+    global server
+
     clipboard_contents = pyperclip.paste()
     if clipboard_contents.startswith("/") and os.path.exists(clipboard_contents):
         # it's a file, serve it
-        server_thread = threading.Thread(target=start_server, args=(clipboard_contents,))
-        server_thread.start()
-        show_qr_url(get_url(clipboard_contents))
+        server = FileServer(clipboard_contents)
+        threading.Thread(target=server.start).start()
+        show_image(get_qr(server.url))
 
     elif clipboard_contents.startswith("http://") or clipboard_contents.startswith("https://"):
         # it's an URL
-        show_qr_url(clipboard_contents)
+        show_image(get_qr(clipboard_contents))
 
 if __name__ == "__main__":
     main()
