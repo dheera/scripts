@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 
-# This script takes whatever is in the clipboard and displays it on screen as a QR code on screen
-# Useful for copying URL from browser and scanning it with your phone
+# This script takes whatever URL is in the clipboard and displays it on screen as a QR code on screen
+# If it is a path to a local file, it spins up a web server for 20 seconds that serves the file on the local LAN
+# Useful for copying stuff from computer to phone
 
 import pyperclip
 import time
 import qrcode
 import threading
 from tkinter import Toplevel, Tk, Label, PhotoImage
+import http.server
+import socketserver
+import socket
+import threading
+import os
+import random
+import string
+from urllib.parse import urlparse, parse_qs
 
-def show_qr(value):
+def show_qr_url(url):
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
         border=5,
     )
-    qr.add_data(value)
+    qr.add_data(url)
     img = qr.make_image(back_color=(255,255,255), fill_color=(0,0,0))
     img = img.resize((960, 960))
     img.save("/tmp/qr.png")
@@ -41,25 +50,64 @@ def show_image(img):
     label = Label(window, image=photo)
     label.pack()
 
-    win.after(10000,lambda:win.destroy())
+    win.after(20000,lambda:win.destroy())
 
     win.mainloop()
 
-current = pyperclip.paste()
-show_qr(current)
+directory = ""
+password = ""
+filename = ""
+ip =(([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["no IP found"])[0]
 
-# TODO: configure this
-#/org/gnome/settings-daemon/plugins/media-keys/calculator
-#  unset
+class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=directory, **kwargs)
+    
+    def do_GET(self):
+        parsed_path = urlparse(self.path)
+        query_params = parse_qs(parsed_path.query)
+        if parsed_path.path == f'/{filename}' and query_params.get('password', [None])[0] == password:
+            super().do_GET()
+        else:
+            self.send_error(404, "File Not Found")
 
-## /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/binding
-#  'Calculator'
-#/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/command
-#  '/home/dheera/bin/scripts/util/clip2qr'
-#/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/name
-#  '/home/dheera/bin/scripts/util/clip2qr'
+def get_url(file_path):
+    url = f"http://{ip}:7777/{filename}?password={password}"
+    return url
 
-#/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings
-#  ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+def start_server(file_path):
+    global password, directory, filename
+    handler = MyHttpRequestHandler
+    port = 7777
+    socketserver.TCPServer.allow_reuse_address = True
+    directory, filename = file_path.rsplit("/", 1)
+    password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+    url = get_url(file_path)
+
+    with socketserver.TCPServer(("", port), handler) as httpd:
+        print(f"Serving {filename} at {url}")
+        server_shutdown_thread = threading.Thread(target=stop_server, args=(httpd,))
+        server_shutdown_thread.start()
+        httpd.serve_forever()
+
+def stop_server(server):
+    time.sleep(20)
+    print("Stopping server...")
+    server.shutdown()
+
+def main():
+    clipboard_contents = pyperclip.paste()
+    if clipboard_contents.startswith("/") and os.path.exists(clipboard_contents):
+        # it's a file, serve it
+        server_thread = threading.Thread(target=start_server, args=(clipboard_contents,))
+        server_thread.start()
+        show_qr_url(get_url(clipboard_contents))
+
+    elif clipboard_contents.startswith("http://"):
+        # it's an URL
+        show_qr_url(clipboard_contents)
+
+if __name__ == "__main__":
+    main()
 
 
