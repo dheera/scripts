@@ -48,15 +48,19 @@ def show_image(img):
     photo = PhotoImage(file=img)
     
     label = Label(window, image=photo)
+    label.focus_set()
+    label.bind("<Key>", lambda event: (win.destroy(), stop_server()))
+    label.bind("<Button-1>", lambda event: (win.destroy(), stop_server()))
     label.pack()
 
-    win.after(20000,lambda:win.destroy())
+    win.after(30000,lambda: (win.destroy(), stop_server()))
 
     win.mainloop()
 
 directory = ""
 password = ""
 filename = ""
+httpd = None
 ip =(([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["no IP found"])[0]
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -76,7 +80,7 @@ def get_url(file_path):
     return url
 
 def start_server(file_path):
-    global password, directory, filename
+    global password, directory, filename, ip, httpd
     handler = MyHttpRequestHandler
     port = 7777
     socketserver.TCPServer.allow_reuse_address = True
@@ -84,16 +88,18 @@ def start_server(file_path):
     password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
     url = get_url(file_path)
 
-    with socketserver.TCPServer(("", port), handler) as httpd:
-        print(f"Serving {filename} at {url}")
-        server_shutdown_thread = threading.Thread(target=stop_server, args=(httpd,))
-        server_shutdown_thread.start()
-        httpd.serve_forever()
+    httpd = socketserver.TCPServer(("", port), handler)
+    print(f"Serving {filename} at {url}")
+    #server_shutdown_thread = threading.Thread(target=stop_server, args=(httpd,))
+    #server_shutdown_thread.start()
+    httpd.serve_forever()
 
-def stop_server(server):
-    time.sleep(20)
-    print("Stopping server...")
-    server.shutdown()
+def stop_server():
+    global httpd
+    #time.sleep(30)
+    if httpd:
+        print("Stopping server...")
+        httpd.shutdown()
 
 def main():
     clipboard_contents = pyperclip.paste()
@@ -103,7 +109,7 @@ def main():
         server_thread.start()
         show_qr_url(get_url(clipboard_contents))
 
-    elif clipboard_contents.startswith("http://"):
+    elif clipboard_contents.startswith("http://") or clipboard_contents.startswith("https://"):
         # it's an URL
         show_qr_url(clipboard_contents)
 
