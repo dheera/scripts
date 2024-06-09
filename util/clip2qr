@@ -4,6 +4,9 @@
 # If it is a path to a local file, it spins up a web server for 20 seconds that serves the file on the local LAN
 # Useful for copying stuff from computer to phone
 
+# Tested on Ubuntu 24.04
+# I have this programmed as <Super>+Q in Settings -> Keyboard -> Keyboard Shortcuts -> Custom Shortcuts
+
 import pyperclip
 import time
 import qrcode
