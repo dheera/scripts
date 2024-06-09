@@ -59,8 +59,8 @@ def show_image(img: PIL.Image):
     photo = PhotoImage(file="/tmp/clip2qr.png")
     label = Label(window, image=photo)
     label.focus_set()
-    label.bind("<Key>", lambda event: (win.destroy(), server.stop()))
-    label.bind("<Button-1>", lambda event: (win.destroy(), server.stop()))
+    label.bind("<Key>", lambda event: (win.destroy(), server.stop() if server is not None else None))
+    label.bind("<Button-1>", lambda event: (win.destroy(), server.stop() if server is not None else None))
     label.pack()
 
     win.after(30000, lambda: (win.destroy(), stop_server()))
