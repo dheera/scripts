@@ -7,6 +7,9 @@
 # Tested on Ubuntu 24.04
 # I have this programmed as <Super>+Q in Settings -> Keyboard -> Keyboard Shortcuts -> Custom Shortcuts
 
+# Requirements:
+# $ sudo apt install python3-pil python3-pyperclip python3-tk python3-qrcode
+
 import pyperclip
 import time
 import qrcode
