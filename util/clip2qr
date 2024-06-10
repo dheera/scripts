@@ -117,6 +117,14 @@ def main():
         # it's an URL
         show_image(get_qr(clipboard_contents))
 
+    else:
+        # no idea what it is, dump it to a .txt file and serve it
+        with open("/tmp/clip2qr.txt", "w") as f:
+            f.write(clipboard_contents)
+        server = FileServer("/tmp/clip2qr.txt")
+        threading.Thread(target=server.start).start()
+        show_image(get_qr(server.url))
+
 if __name__ == "__main__":
     main()
 
