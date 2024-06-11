@@ -53,6 +53,7 @@ scribus
 vim
 vlc
 wget
+wl-clipboard
 xautomation
 xclip
 xdotool
