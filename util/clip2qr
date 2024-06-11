@@ -9,6 +9,7 @@
 
 # Requirements:
 # $ sudo apt install python3-pil python3-pyperclip python3-tk python3-qrcode
+# $ sudo apt intsall wl-clipboard # if you use wayland
 
 import pyperclip
 import time
@@ -24,6 +25,9 @@ import random
 import string
 from urllib.parse import urlparse, parse_qs
 import PIL.Image
+
+if os.environ['XDG_SESSION_TYPE'] == 'wayland':
+    pyperclip.set_clipboard('wl-clipboard')
 
 def get_qr(url:str, size:int = 960):
     """
