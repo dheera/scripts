@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cat vars/common.dconf | dconf load /
+
+if [ -d "/proc/acpi/button/lid" ]; then
+    # it is a laptop
+    cat vars/laptop.dconf | dconf load /
+else
+    # it is a desktop
+    cat vars/desktop.dconf | dconf load /
+fi
