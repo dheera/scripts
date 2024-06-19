@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import argparse
 import torch
 from diffusers import Transformer2DModel, PixArtSigmaPipeline
