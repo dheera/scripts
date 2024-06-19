@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+import argparse
+import torch
+from diffusers import Transformer2DModel, PixArtSigmaPipeline
+
+def main():
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Generate an image from a text prompt using Pixart Sigma.")
+    parser.add_argument('prompt', type=str, help='Text prompt to generate image from')
+    parser.add_argument('-o', '--output', type=str, default='./cactus.png', help='Output filename for the generated image')
+    
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Set device to GPU if available, otherwise use CPU
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    weight_dtype = torch.float16
+
+    # Load the pre-trained Transformer2DModel
+    transformer = Transformer2DModel.from_pretrained(
+        "PixArt-alpha/PixArt-Sigma-XL-2-1024-MS",
+        subfolder='transformer', 
+        torch_dtype=weight_dtype,
+        use_safetensors=True,
+    )
+
+    # Load the PixArtSigmaPipeline
+    pipe = PixArtSigmaPipeline.from_pretrained(
+        "PixArt-alpha/pixart_sigma_sdxlvae_T5_diffusers",
+        transformer=transformer,
+        torch_dtype=weight_dtype,
+        use_safetensors=True,
+    )
+
+    # Move pipeline to the specified device
+    pipe.to(device)
+
+    # Enable memory optimizations (uncomment if needed)
+    # pipe.enable_model_cpu_offload()
+
+    # Generate the image
+    image = pipe(args.prompt).images[0]
+
+    # Save the image
+    image.save(args.output)
+
+if __name__ == '__main__':
+    main()
+
