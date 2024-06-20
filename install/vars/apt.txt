@@ -48,6 +48,7 @@ python3-tqdm
 python3-websockets
 python3-yaml
 rclone
+remmina
 screen
 scribus
 vim
