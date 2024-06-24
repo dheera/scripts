@@ -5,6 +5,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import argparse
 import torch
+import re
 from diffusers import Transformer2DModel, PixArtSigmaPipeline
 
 def main():
@@ -45,8 +46,13 @@ def main():
     # Generate the image
     image = pipe(args.prompt).images[0]
 
+    output_filename = args.output
+
+    if output_filename is None:
+        output_filename = re.sub(r'[^a-zA-Z0-9]+', ' ', args.prompt).lower().strip("_") + ".png"
+
     # Save the image
-    image.save(args.output)
+    image.save(output_filename)
 
 if __name__ == '__main__':
     main()
