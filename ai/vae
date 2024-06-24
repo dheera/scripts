@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+
+# VAE encoder/decoder
+# Example usage:
+# ./vae encode foo.png --output foo.npy
+# ./vae decode foo.npy --output foo_decoded.png
+
+import argparse
+import numpy as np
+from PIL import Image
+import torch
+from diffusers import AutoencoderKL
+
+# Dictionary of supported VAEs
+SUPPORTED_VAES = {
+    "sdxl-vae": "stabilityai/sdxl-vae",
+    "stable-diffusion-v1-4": "CompVis/stable-diffusion-v1-4",
+    "ddpm-cifar10-32": "google/ddpm-cifar10-32"
+}
+
+def load_vae(model_name):
+    model_path = SUPPORTED_VAES.get(model_name)
+    if model_path is None:
+        raise ValueError(f"Unsupported VAE model name: {model_name}")
+    vae = AutoencoderKL.from_pretrained(model_path)
+    vae.eval()
+    return vae
+
+def encode(vae, image_path, output_path=None):
+    # Load image
+    image = Image.open(image_path).convert("RGB")
+    image = np.array(image).astype(np.float32) / 255.0
+    image = torch.tensor(image).permute(2, 0, 1).unsqueeze(0)
+
+    # Encode image
+    with torch.no_grad():
+        latents = vae.encode(image).latent_dist.sample()
+
+    # Save latents to npy file
+    if output_path is None:
+        output_path = image_path.rsplit(".", 1)[0] + ".npy"
+    np.save(output_path, latents.cpu().numpy())
+    print(f"Encoded image saved to {output_path}")
+
+def decode(vae, npy_path, output_path=None):
+    # Load latents from npy file
+    latents = np.load(npy_path)
+    latents = torch.tensor(latents)
+
+    # Decode latents to image
+    with torch.no_grad():
+        decoded_image = vae.decode(latents).sample().squeeze(0).permute(1, 2, 0).numpy()
+
+    # Save decoded image
+    decoded_image = (decoded_image * 255).astype(np.uint8)
+    decoded_image = Image.fromarray(decoded_image)
+    if output_path is None:
+        output_path = npy_path.rsplit(".", 1)[0] + ".png"
+    decoded_image.save(output_path)
+    print(f"Decoded image saved to {output_path}")
+
+def main():
+    parser = argparse.ArgumentParser(description="Encode and decode images using VAE")
+    subparsers = parser.add_subparsers(dest="command")
+
+    # Encode command
+    encode_parser = subparsers.add_parser("encode", help="Encode an image into a npy file of latents")
+    encode_parser.add_argument("image_path", type=str, help="Path to the input image")
+    encode_parser.add_argument("--output", type=str, help="Path to the output npy file")
+    encode_parser.add_argument("--vae", type=str, default="sdxl-vae", choices=SUPPORTED_VAES.keys(), help="VAE model to use")
+
+    # Decode command
+    decode_parser = subparsers.add_parser("decode", help="Decode a npy file of latents into an image")
+    decode_parser.add_argument("npy_path", type=str, help="Path to the input npy file")
+    decode_parser.add_argument("--output", type=str, help="Path to the output image file")
+    decode_parser.add_argument("--vae", type=str, default="sdxl-vae", choices=SUPPORTED_VAES.keys(), help="VAE model to use")
+
+    args = parser.parse_args()
+
+    vae = load_vae(args.vae)
+
+    if args.command == "encode":
+        encode(vae, args.image_path, args.output)
+    elif args.command == "decode":
+        decode(vae, args.npy_path, args.output)
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()
+
