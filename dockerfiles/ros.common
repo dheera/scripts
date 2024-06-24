@@ -1,4 +1,12 @@
+RUN ls -1 /opt/ros | head -1 > /etc/rosdistro
 RUN DEBIAN_FRONTEND=noninteractive apt-get update
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ros-`cat /etc/rosdistro`-desktop-full
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ros-`cat /etc/rosdistro`-moveit
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ros-`cat /etc/rosdistro`-navigation2
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ros-`cat /etc/rosdistro`-nav2-bringup
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ros-`cat /etc/rosdistro`-turtlebot3
+
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     ffmpeg \
@@ -8,11 +16,17 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     htop \
     iftop \
     jq \
+    libi2c-dev \
     libx264-dev \
     libopus-dev \
     libvpx-dev \
     nethogs \
+    python3-numpy \
+    python3-pil \
     python3-pip \
+    python3-scipy \
+    python3-tornado \
+    python3-yaml \
     screen \
     stress \
     vim \
@@ -23,11 +37,7 @@ RUN pip3 install \
     aiortc \
     boto3 \
     botocore \
-    numpy \
     openai \
     orjson \
     opencv-python \
-    scipy \
-    tqdm \
-    tornado \
-    pyyaml
+    simplejpeg
