@@ -25,6 +25,7 @@ links
 lm-sensors
 mplayer
 mpv
+ncdu
 nethogs
 python3-aiortc
 python3-bs4
