@@ -2,14 +2,11 @@
 
 import json
 import os
-#import pyautogui
+os.system("xhost +")
 import time
 
 import tkinter as tk
 from pynput import mouse
-
-
-#pyautogui.FAILSAFE = False
 
 config_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logitech-edge-switcher.json")
 hostname = os.uname().nodename.split(".")[0]
