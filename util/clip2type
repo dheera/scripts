@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+
+# Utility to "paste" clipboard contents by simulating typing on uinput.
+# Needs to be run with sudo.
+# Useful to get around goddamn websites that try to prevent you from pasting stuff e.g. bank routing numbers
+
+import subprocess
+import pyperclip
+import time
+import uinput
+
+key_mapping = {
+    'A': (uinput.KEY_A, True),
+    'O': (uinput.KEY_S, True),
+    'E': (uinput.KEY_D, True),
+    'U': (uinput.KEY_F, True),
+    'I': (uinput.KEY_G, True),
+    'D': (uinput.KEY_H, True),
+    'H': (uinput.KEY_J, True),
+    'T': (uinput.KEY_K, True),
+    'N': (uinput.KEY_L, True),
+    'S': (uinput.KEY_SEMICOLON, True),
+    '\'': (uinput.KEY_Q, True),
+    ',': (uinput.KEY_W, True),
+    '.': (uinput.KEY_E, True),
+    'P': (uinput.KEY_R, True),
+    'Y': (uinput.KEY_T, True),
+    'F': (uinput.KEY_Y, True),
+    'G': (uinput.KEY_U, True),
+    'C': (uinput.KEY_I, True),
+    'R': (uinput.KEY_O, True),
+    'L': (uinput.KEY_P, True),
+    '/': (uinput.KEY_LEFTBRACE, True),
+    '=': (uinput.KEY_RIGHTBRACE, True),
+    ';': (uinput.KEY_Z, True),
+    'Q': (uinput.KEY_X, True),
+    'J': (uinput.KEY_C, True),
+    'K': (uinput.KEY_V, True),
+    'X': (uinput.KEY_B, True),
+    'B': (uinput.KEY_N, True),
+    'M': (uinput.KEY_M, True),
+    'W': (uinput.KEY_COMMA, True),
+    'V': (uinput.KEY_DOT, True),
+    'Z': (uinput.KEY_SLASH, True),
+    'a': (uinput.KEY_A, False),
+    'o': (uinput.KEY_S, False),
+    'e': (uinput.KEY_D, False),
+    'u': (uinput.KEY_F, False),
+    'i': (uinput.KEY_G, False),
+    'd': (uinput.KEY_H, False),
+    'h': (uinput.KEY_J, False),
+    't': (uinput.KEY_K, False),
+    'n': (uinput.KEY_L, False),
+    's': (uinput.KEY_SEMICOLON, False),
+    '\'': (uinput.KEY_Q, False),
+    ',': (uinput.KEY_W, False),
+    '.': (uinput.KEY_E, False),
+    'p': (uinput.KEY_R, False),
+    'y': (uinput.KEY_T, False),
+    'f': (uinput.KEY_Y, False),
+    'g': (uinput.KEY_U, False),
+    'c': (uinput.KEY_I, False),
+    'r': (uinput.KEY_O, False),
+    'l': (uinput.KEY_P, False),
+    '/': (uinput.KEY_LEFTBRACE, False),
+    '=': (uinput.KEY_RIGHTBRACE, False),
+    ';': (uinput.KEY_Z, False),
+    'q': (uinput.KEY_X, False),
+    'j': (uinput.KEY_C, False),
+    'k': (uinput.KEY_V, False),
+    'x': (uinput.KEY_B, False),
+    'b': (uinput.KEY_N, False),
+    'm': (uinput.KEY_M, False),
+    'w': (uinput.KEY_COMMA, False),
+    'v': (uinput.KEY_DOT, False),
+    'z': (uinput.KEY_SLASH, False),
+    ' ': (uinput.KEY_SPACE, False),
+    '\n': (uinput.KEY_ENTER, False),
+    '\"': (uinput.KEY_Q, True),
+    '<': (uinput.KEY_W, True),
+    '>': (uinput.KEY_E, True),
+    '?': (uinput.KEY_LEFTBRACE, True),
+    '+': (uinput.KEY_RIGHTBRACE, True),
+    ':': (uinput.KEY_Z, True)
+}
+
+pyperclip.set_clipboard('xclip')
+
+def get_clipboard_content():
+    return pyperclip.paste().strip()
+
+
+def send_keystrokes(content):
+    # Open the virtual keyboard device
+    with uinput.Device([uinput.KEY_A, uinput.KEY_B, uinput.KEY_C, uinput.KEY_D, uinput.KEY_E,
+                        uinput.KEY_F, uinput.KEY_G, uinput.KEY_H, uinput.KEY_I, uinput.KEY_J,
+                        uinput.KEY_K, uinput.KEY_L, uinput.KEY_M, uinput.KEY_N, uinput.KEY_O,
+                        uinput.KEY_P, uinput.KEY_Q, uinput.KEY_R, uinput.KEY_S, uinput.KEY_T,
+                        uinput.KEY_U, uinput.KEY_V, uinput.KEY_W, uinput.KEY_X, uinput.KEY_Y,
+                        uinput.KEY_Z, uinput.KEY_SPACE, uinput.KEY_ENTER]) as device:
+
+        time.sleep(0.1)
+
+        for char in content:
+            key, shift = key_mapping[char]
+            if shift:
+                device.emit(uinput.KEY_LEFTSHIFT, 1)  # press SHIFT
+                device.emit_click(key)
+                device.emit(uinput.KEY_LEFTSHIFT, 0)  # release SHIFT
+            else:
+                device.emit_click(key)
+
+            time.sleep(0.01)  # Adding a small delay to simulate typing
+
+
+if __name__ == "__main__":
+    clipboard_content = get_clipboard_content()
+    time.sleep(1)
+    send_keystrokes(clipboard_content)
