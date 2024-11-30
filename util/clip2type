@@ -97,7 +97,8 @@ def send_keystrokes(content):
                         uinput.KEY_K, uinput.KEY_L, uinput.KEY_M, uinput.KEY_N, uinput.KEY_O,
                         uinput.KEY_P, uinput.KEY_Q, uinput.KEY_R, uinput.KEY_S, uinput.KEY_T,
                         uinput.KEY_U, uinput.KEY_V, uinput.KEY_W, uinput.KEY_X, uinput.KEY_Y,
-                        uinput.KEY_Z, uinput.KEY_SPACE, uinput.KEY_ENTER]) as device:
+                        uinput.KEY_Z, uinput.KEY_SEMICOLON, uinput.KEY_SPACE, uinput.KEY_ENTER]) \
+                        as device:
 
         time.sleep(0.1)
 
