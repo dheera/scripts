@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Define the file path
+FILE="/usr/share/applications/google-chrome.desktop"
+BACKUP_FILE="/usr/share/applications/google-chrome.desktop.bak"
+
+# Check if the file exists
+if [ ! -f "$FILE" ]; then
+    echo "Error: File $FILE does not exist."
+    exit 1
+fi
+
+# Create a backup
+sudo cp "$FILE" "$BACKUP_FILE"
+
+echo "Backup created at $BACKUP_FILE"
+
+# Perform the replacement using sed
+sudo sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --force-device-scale-factor=1.25|g' "$FILE"
+
+echo "Replacement completed successfully."
+
