@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import pandas as pd
+import tempfile
+import subprocess
+import sys
+import argparse
+import fnmatch
+
+def open_parquet_in_gnumeric(parquet_file, column_patterns):
+    # Read the Parquet file
+    df = pd.read_parquet(parquet_file)
+
+    # If column patterns are specified, filter the columns
+    if column_patterns:
+        selected_columns = []
+        for pattern in column_patterns:
+            selected_columns.extend(fnmatch.filter(df.columns, pattern))
+        selected_columns = list(set(selected_columns))  # Remove duplicates
+        if not selected_columns:
+            print("No columns matched the given patterns.", file=sys.stderr)
+            sys.exit(1)
+        df = df[selected_columns]
+
+    # Create a temporary file for the CSV
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp_csv:
+        temp_filename = temp_csv.name
+
+    # Save to CSV
+    df.to_csv(temp_filename, index=False)
+
+    # Open with Gnumeric
+    try:
+        subprocess.run(["gnumeric", temp_filename], check=True)
+    except FileNotFoundError:
+        print("Error: Gnumeric is not installed or not found in the system path.", file=sys.stderr)
+    finally:
+        # The file will not be deleted immediately to allow Gnumeric to access it
+        print(f"Temporary CSV file: {temp_filename} (delete it manually if needed)")
+
+def main():
+    parser = argparse.ArgumentParser(description="Open a Parquet file in Gnumeric after converting it to CSV.")
+    parser.add_argument("parquet_file", help="Path to the Parquet file.")
+    parser.add_argument(
+        "-c", "--columns", nargs="*", default=None,
+        help="Select columns using wildcard patterns (e.g., 'price_*', 'vol_*'). If not specified, all columns are used."
+    )
+
+    args = parser.parse_args()
+    open_parquet_in_gnumeric(args.parquet_file, args.columns)
+
+if __name__ == "__main__":
+    main()
+
