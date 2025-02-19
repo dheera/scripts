@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-# plot parquets with math, e.g.
+# plot time series parquets with math
+
+# assumption is the index is a timestamp and there are various columns you want to plot
+
 # $ plot-parquet /fin/matrix/2025-02-14.parquet "NVDA.close" "NVDA.C_volume / NVDA.P_volume"
 # will have two subplots, one with NVDA.close and one with NVDA.C_volume/NVDA.P_volume
 
