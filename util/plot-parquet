@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+
+# plot parquets with math, e.g.
+# $ plot-parquet /fin/matrix/2025-02-14.parquet "NVDA.close" "NVDA.C_volume / NVDA.P_volume"
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import re
+import argparse
+
+def load_parquet(file_path):
+    """Load a Parquet file into a DataFrame."""
+    return pd.read_parquet(file_path)
+
+def find_multiindex_references(expression, df):
+    """
+    Finds all tokens like 'SOMENAME.SOMEFIELD' in the expression via regex,
+    checks if they exist as MultiIndex columns in df,
+    and maps them to a new valid Python variable name.
+    """
+    # This pattern looks for word characters separated by a dot:
+    # e.g., "NVDA.close", "GOOGL.volume", etc.
+    pattern = re.compile(r'\b([A-Za-z0-9_]+)\.([A-Za-z0-9_]+)\b')
+
+    # Dictionary mapping from original token (e.g. 'NVDA.close') -> safe var name (e.g. 'col_0')
+    token_to_var = {}
+    # Dictionary that we'll use during eval -> { 'col_0': df[('NVDA','close')], ... }
+    local_dict = {}
+
+    matches = pattern.findall(expression)  # list of tuples [(symbol, field), ...]
+
+    # We'll use finditer to get actual string matches like "NVDA.close"
+    for match in pattern.finditer(expression):
+        original_str = match.group(0)  # e.g. "NVDA.close"
+        sym = match.group(1)           # e.g. "NVDA"
+        field = match.group(2)         # e.g. "close"
+
+        # If we've already replaced this reference, skip
+        if original_str in token_to_var:
+            continue
+
+        col_tuple = (sym, field)
+        if col_tuple not in df.columns:
+            print(f"Warning: Column '{original_str}' not found in DataFrame.")
+            # We still create a placeholder to avoid repeated warning
+            token_to_var[original_str] = f"__invalid_{len(token_to_var)}"
+            local_dict[token_to_var[original_str]] = pd.Series(dtype=float)
+            continue
+
+        # Create a safe variable name for Python
+        safe_var = f"col_{len(token_to_var)}"
+        token_to_var[original_str] = safe_var
+
+        # Map safe variable to the actual Series
+        local_dict[safe_var] = df[col_tuple]
+
+    return token_to_var, local_dict
+
+def transform_expression(expression, token_to_var):
+    """
+    Replaces each original multiindex token in the expression with its safe variable name.
+    """
+    for original, safe_var in token_to_var.items():
+        # Use a regex replacement with word boundaries to avoid partial replacements
+        expression = re.sub(rf'\b{re.escape(original)}\b', safe_var, expression)
+    return expression
+
+def evaluate_expression(expression, df):
+    """
+    1) Find multiindex references,
+    2) Replace them with safe variable names,
+    3) Evaluate the expression.
+    """
+    token_to_var, local_dict = find_multiindex_references(expression, df)
+
+    # If we found references that do not exist, check if it's purely invalid
+    # but let's just attempt an eval. If the needed columns are missing, we'll get an empty Series anyway.
+
+    # Now transform the expression to replace "NVDA.close" -> "col_0" etc.
+    safe_expression = transform_expression(expression, token_to_var)
+
+    try:
+        out_series = eval(safe_expression, {"np": np}, local_dict)
+    except Exception as e:
+        print(f"Error evaluating expression '{expression}': {e}")
+        return None
+
+    # We require out_series to be a Pandas Series or similar
+    if not isinstance(out_series, (pd.Series, pd.DataFrame)):
+        print(f"Error: Expression '{expression}' did not result in a Pandas Series.")
+        return None
+
+    return out_series
+
+def plot_columns(df, expressions):
+    """Plot specified columns/expressions against the index with synchronized subplots."""
+
+    fig, axes = plt.subplots(len(expressions), 1, figsize=(10, 5 * len(expressions)), sharex=True)
+    if len(expressions) == 1:
+        axes = [axes]  # Ensure iterable if only one subplot
+
+    for ax, expr in zip(axes, expressions):
+        series = evaluate_expression(expr, df)
+        if series is None or series.dropna().empty:
+            print(f"Skipping expression '{expr}' due to errors or no valid data.")
+            continue
+
+        series = series.dropna()
+        # Compute 5th and 95th percentile for y-axis bounds
+        y_min, y_max = np.percentile(series, [1, 99])
+
+        ax.plot(series.index, series, label=expr, color='blue')
+        ax.set_ylabel(expr)
+        ax.set_ylim(y_min, y_max)
+        ax.legend()
+        ax.grid(True)
+
+    plt.xlabel("Time")
+    plt.tight_layout()
+    plt.show()
+
+def main():
+    parser = argparse.ArgumentParser(description="Plot specified columns or expressions from a Parquet file against its index.")
+    parser.add_argument("file", type=str, help="Path to the Parquet file.")
+    parser.add_argument("expressions", type=str, nargs='+',
+                        help="List of column names or expressions (e.g., 'AAPL.close' or 'AAPL.close / AAPL.volume').")
+
+    args = parser.parse_args()
+    df = load_parquet(args.file)
+    plot_columns(df, args.expressions)
+
+if __name__ == "__main__":
+    main()
+
