@@ -1,10 +1,36 @@
 #!/usr/bin/env python3
 
 import pandas as pd
-import sys
+import argparse
 
-df = pd.read_parquet(sys.argv[1])
-if len(sys.argv) > 2:
-    df = df[sys.argv[2]]
+# Set up the argument parser
+parser = argparse.ArgumentParser(
+    description="Print a Parquet file with options to select columns and to print using to_string()."
+)
+parser.add_argument("file", help="Path to the Parquet file to read.")
+parser.add_argument(
+    "-c", "--columns",
+    nargs="+",
+    help="List of column names to print from the DataFrame."
+)
+parser.add_argument(
+    "-a", "--all",
+    action="store_true",
+    help="Print the entire DataFrame using to_string() to show all rows and columns."
+)
 
-print(df)
+args = parser.parse_args()
+
+# Read the Parquet file
+df = pd.read_parquet(args.file)
+
+# If columns are provided, filter the DataFrame to include only these columns
+if args.columns:
+    df = df[args.columns]
+
+# If --all is specified, print using to_string() to display full output
+if args.all:
+    print(df.to_string())
+else:
+    print(df)
+
