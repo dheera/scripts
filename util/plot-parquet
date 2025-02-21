@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 # plot time series parquets with math
-
+#
 # assumption is the index is a timestamp and there are various columns you want to plot
-
+#
 # $ plot-parquet /fin/matrix/2025-02-14.parquet "NVDA.close" "NVDA.C_volume / NVDA.P_volume"
 # will have two subplots, one with NVDA.close and one with NVDA.C_volume/NVDA.P_volume
-
+#
 # you can put two into the same plot with a comma separator e.g.
 # $ plot-parquet /fin/matrix/2025-02-14.parquet "NVDA.open, NVDA.close" "NVDA.volume"
 # will put open and close into the same plot
@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import argparse
+import keyword
 
 def load_parquet(file_path):
     """Load a Parquet file into a DataFrame."""
@@ -23,41 +24,71 @@ def load_parquet(file_path):
 
 def find_multiindex_references(expression, df):
     """
-    Finds tokens like 'SOMENAME.SOMEFIELD' in the expression,
-    checking if they exist as MultiIndex columns in df,
-    and maps them to safe Python variable names.
-
-    Updated regex: only tokens starting with a letter or underscore
-    are considered (so numbers like '6.2' won't match).
+    Finds tokens like 'SOMENAME.SOMEFIELD' in the expression.
+    If df.columns is a MultiIndex, it checks for the tuple (SOMENAME, SOMEFIELD).
+    If df.columns is a single index, it checks for the full string token.
+    Maps found tokens to safe Python variable names.
     """
-    # Pattern: first part must start with letter/underscore
+    # Pattern: first part must start with a letter/underscore
     pattern = re.compile(r'\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\b')
     token_to_var = {}
     local_dict = {}
 
     for match in pattern.finditer(expression):
-        original_str = match.group(0)  # e.g. "MSTR.close"
-        sym = match.group(1)
-        field = match.group(2)
-
+        original_str = match.group(0)  # e.g. "NVDA.close"
         if original_str in token_to_var:
             continue
-
-        col_tuple = (sym, field)
-        if col_tuple not in df.columns:
-            print(f"Warning: Column '{original_str}' not found in DataFrame.")
-            token_to_var[original_str] = f"__invalid_{len(token_to_var)}"
-            local_dict[token_to_var[original_str]] = pd.Series(dtype=float)
-            continue
-
+        sym = match.group(1)
+        field = match.group(2)
         safe_var = f"col_{len(token_to_var)}"
+
+        if isinstance(df.columns, pd.MultiIndex):
+            col_tuple = (sym, field)
+            if col_tuple not in df.columns:
+                print(f"Warning: Column '{original_str}' not found in DataFrame.")
+                token_to_var[original_str] = f"__invalid_{len(token_to_var)}"
+                local_dict[token_to_var[original_str]] = pd.Series(dtype=float)
+                continue
+            local_dict[safe_var] = df[col_tuple]
+        else:
+            # Single-index columns: look for the whole token as a column name
+            if original_str not in df.columns:
+                print(f"Warning: Column '{original_str}' not found in DataFrame.")
+                token_to_var[original_str] = f"__invalid_{len(token_to_var)}"
+                local_dict[token_to_var[original_str]] = pd.Series(dtype=float)
+                continue
+            local_dict[safe_var] = df[original_str]
+
         token_to_var[original_str] = safe_var
-        local_dict[safe_var] = df[col_tuple]
 
     return token_to_var, local_dict
 
+def find_singleindex_references(expression, df, token_to_var, local_dict):
+    """
+    For single-index DataFrames, if no tokens were found by the multiindex pattern,
+    look for valid Python identifiers in the expression that exist as column names.
+    """
+    # Only apply if columns are single-index.
+    if isinstance(df.columns, pd.MultiIndex):
+        return token_to_var, local_dict
+
+    # Get all candidate tokens (valid Python identifiers)
+    candidates = re.findall(r'\b[A-Za-z_][A-Za-z0-9_]*\b', expression)
+    # Exclude some reserved words and known names
+    reserved = set(keyword.kwlist) | {"np"}
+    for token in candidates:
+        if token in reserved:
+            continue
+        if token in token_to_var:
+            continue  # already processed via multiindex lookup
+        if token in df.columns:
+            safe_var = f"col_{len(token_to_var)}"
+            token_to_var[token] = safe_var
+            local_dict[safe_var] = df[token]
+    return token_to_var, local_dict
+
 def transform_expression(expression, token_to_var):
-    """Replace each MultiIndex token in the expression with its safe variable name."""
+    """Replace each token in the expression with its safe variable name."""
     for original, safe_var in token_to_var.items():
         expression = re.sub(rf'\b{re.escape(original)}\b', safe_var, expression)
     return expression
@@ -65,11 +96,14 @@ def transform_expression(expression, token_to_var):
 def evaluate_expression(expression, df):
     """
     Evaluate an expression by:
-      1. Finding MultiIndex references.
+      1. Finding column references.
       2. Replacing them with safe variable names.
       3. Evaluating the expression.
     """
+    # First, try to find multiindex-style tokens.
     token_to_var, local_dict = find_multiindex_references(expression, df)
+    # For single-index DataFrames, also check for simple token names.
+    token_to_var, local_dict = find_singleindex_references(expression, df, token_to_var, local_dict)
     safe_expression = transform_expression(expression, token_to_var)
     try:
         out_series = eval(safe_expression, {"np": np}, local_dict)
@@ -114,8 +148,8 @@ def plot_columns(df, group_expressions):
         # Combine all valid series values to compute unified y-axis bounds
         combined_values = np.concatenate([s.values for s in series_list if not s.empty])
         y_min, y_max = np.percentile(combined_values, [2, 98])
-        y_min -= (y_max - y_min)*0.1
-        y_max += (y_max - y_min)*0.1
+        y_min -= (y_max - y_min) * 0.1
+        y_max += (y_max - y_min) * 0.1
         ax.set_ylim(y_min, y_max)
         ax.set_ylabel(group_expr)
         ax.legend()
