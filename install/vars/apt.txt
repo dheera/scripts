@@ -27,8 +27,11 @@ mplayer
 mpv
 ncdu
 nethogs
+nut-utils
+python3-aioice
 python3-aiortc
 python3-bs4
+python3-bloom
 python3-click
 python3-evdev
 python3-matplotlib
