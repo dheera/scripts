@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 """
 Usage:
-    plot-parquet2 EXPRESSION [EXPRESSION ...]
+    plotx EXPRESSION [EXPRESSION ...]
 
 Description:
     This tool plots time-series data from Parquet files. Each EXPRESSION can include file column references
@@ -25,22 +25,22 @@ Token Formats:
 
 Examples:
     1. Plot a single multi-level column:
-         plot-parquet2 2025-02-20:NVDA:close
+         plotx 2025-02-20:NVDA:close
 
     2. Plot a single-level column (from NVDA.parquet):
-         plot-parquet2 NVDA:close
+         plotx NVDA:close
 
     3. Plot an arithmetic expression between a multi-level and a single-level column:
-         plot-parquet2 2025-02-20:NVDA:close / NVDA:close
+         plotx 2025-02-20:NVDA:close / NVDA:close
 
     4. Plot an expression using a constant:
-         plot-parquet2 NVDA:close / :2.4
+         plotx NVDA:close / :2.4
 
     5. Plot multiple expressions on the same subplot:
-         plot-parquet2 "NVDA:close, 2025-02-20:NVDA:close"
+         plotx "NVDA:close, 2025-02-20:NVDA:close"
 
     6. Plot each expression in separate subplots:
-         plot-parquet2 "NVDA:close" "2025-02-20:NVDA:close"
+         plotx "NVDA:close" "2025-02-20:NVDA:close"
 
 Note:
     If a loaded Parquet file contains a 'date' column, it is automatically converted to a datetime index and used
