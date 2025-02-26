@@ -2,70 +2,96 @@
 #!/usr/bin/env python3
 """
 Usage:
-    plotx EXPRESSION [EXPRESSION ...]
+    plot-parquet2 EXPRESSION [EXPRESSION ...]
 
 Description:
-    This tool plots time-series data from Parquet files. Each EXPRESSION can include file column references
-    and constants, and the arithmetic expression is evaluated to produce a Pandas Series, which is then plotted
+    This tool plots time-series data from Parquet or CSV files. Each EXPRESSION can include file column references
+    and constants, and the arithmetic expression is evaluated to produce a Pandas Series which is then plotted
     against its index. Multiple expressions provided on the command line will be plotted in separate subplots,
     while comma-separated expressions within a single argument will be plotted on the same subplot.
 
 Token Formats:
     1. Multi-level column reference:
          "filename:col:field"
-         - Loads "filename.parquet" and extracts the multi-level column (col, field).
+         - Loads "filename.parquet" or "filename.csv" and extracts the multi-level column (col, field).
 
     2. Single-level column reference:
          "filename:column"
-         - Loads "filename.parquet" and extracts the column "column".
+         - Loads "filename.parquet" or "filename.csv" and extracts the column "column".
 
     3. Constant:
          ":number"
          - Interprets as a constant number.
 
 Examples:
-    1. Plot a single multi-level column:
-         plotx 2025-02-20:NVDA:close
+    1. Plot a single multi-level column (from a Parquet file):
+         plot-parquet2 2025-02-20:NVDA:close
 
-    2. Plot a single-level column (from NVDA.parquet):
-         plotx NVDA:close
+    2. Plot a single-level column (from a CSV or Parquet file):
+         plot-parquet2 NVDA:close
 
     3. Plot an arithmetic expression between a multi-level and a single-level column:
-         plotx 2025-02-20:NVDA:close / NVDA:close
+         plot-parquet2 2025-02-20:NVDA:close / NVDA:close
 
     4. Plot an expression using a constant:
-         plotx NVDA:close / :2.4
+         plot-parquet2 NVDA:close / :2.4
 
     5. Plot multiple expressions on the same subplot:
-         plotx "NVDA:close, 2025-02-20:NVDA:close"
+         plot-parquet2 "NVDA:close, 2025-02-20:NVDA:close"
 
     6. Plot each expression in separate subplots:
-         plotx "NVDA:close" "2025-02-20:NVDA:close"
+         plot-parquet2 "NVDA:close" "2025-02-20:NVDA:close"
 
 Note:
-    If a loaded Parquet file contains a 'date' column, it is automatically converted to a datetime index and used
-    for the x-axis labels.
+    - The file token (e.g. "NVDA" or "2025-02-20") will be resolved by checking for "NVDA.parquet" (or "2025-02-20.parquet")
+      first. If not found, it will try "NVDA.csv" (or "2025-02-20.csv").
+    - For CSV files, a heuristic is applied to identify a datetime column. If a column’s first few entries can be parsed as dates,
+      that column is set as the index and used for the x-axis labels.
 """
 
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import re
 import argparse
 
-def load_parquet(file_path):
+def infer_datetime_index(df, nrows=5):
     """
-    Load a Parquet file into a DataFrame.
-    If a 'date' column exists, convert it to datetime and set it as the index.
+    Heuristic to detect a datetime column in a DataFrame.
+    If a column has object/string data and at least half of its first nrows can be parsed as dates,
+    then set that column as the index.
     """
-    df = pd.read_parquet(file_path)
-    if "date" in df.columns:
-        try:
-            df["date"] = pd.to_datetime(df["date"])
-            df = df.set_index("date")
-        except Exception as e:
-            print(f"Error converting 'date' column in {file_path} to datetime: {e}")
+    for col in df.columns:
+        # If already datetime, use it.
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            return df.set_index(col)
+        # Otherwise, if the column is object-like, try to convert a few entries.
+        if df[col].dtype == 'object':
+            sample = pd.to_datetime(df[col].head(nrows), errors='coerce')
+            if sample.notna().sum() >= max(1, nrows // 2):
+                return df.set_index(col)
     return df
+
+def load_data(file_name_base):
+    """
+    Attempt to load a file from a given base name.
+    Try {file_name_base}.parquet first; if that fails, try {file_name_base}.csv.
+    For CSV files, apply a heuristic to detect a datetime column.
+
+    Returns:
+        A tuple (df, actual_file) where actual_file is the filename used.
+    """
+    file_candidates = [f"{file_name_base}.parquet", f"{file_name_base}.csv"]
+    for candidate in file_candidates:
+        if os.path.exists(candidate):
+            if candidate.endswith(".parquet"):
+                df = pd.read_parquet(candidate)
+            elif candidate.endswith(".csv"):
+                df = pd.read_csv(candidate)
+                df = infer_datetime_index(df)
+            return df, candidate
+    raise FileNotFoundError(f"Neither {file_name_base}.parquet nor {file_name_base}.csv exists.")
 
 def evaluate_new_expression(expression, file_cache=None):
     """
@@ -74,10 +100,10 @@ def evaluate_new_expression(expression, file_cache=None):
     Supported token formats:
       - Multi-level column reference:
           "filename:col:field"
-          Loads "filename.parquet" and extracts the multi-level column (col, field).
+          Loads "filename.parquet" or "filename.csv" and extracts the multi-level column (col, field).
       - Single-level column reference:
           "filename:column"
-          Loads "filename.parquet" and extracts the column "column".
+          Loads "filename.parquet" or "filename.csv" and extracts the column "column".
       - Constant:
           ":number"
           Interprets as a constant number.
@@ -91,9 +117,9 @@ def evaluate_new_expression(expression, file_cache=None):
     token_to_var = {}
     safe_expr = expression
 
-    # Regex supports tokens of two forms:
-    #   1. file tokens: either "file:col" (single-level) or "file:col:field" (multi-level)
-    #   2. constant tokens: tokens starting with a colon followed by a number.
+    # Regex pattern supports tokens of two forms:
+    #   1. File tokens: either "file:col" (single-level) or "file:col:field" (multi-level)
+    #   2. Constant tokens: tokens starting with a colon followed by a number.
     pattern = re.compile(
         r'(?P<file_token>(?P<file>[^:\s]+):(?P<col>[^:\s]+)(?::(?P<field>[^:\s]+))?)'
         r'|(?P<constant_token>:(?P<constant>-?\d+(?:\.\d+)?))'
@@ -115,15 +141,15 @@ def evaluate_new_expression(expression, file_cache=None):
                 local_vars[safe_var] = 0.0
         elif match.group('file_token'):
             file_name = match.group('file')
-            parquet_file = f"{file_name}.parquet"
-            if parquet_file not in file_cache:
-                try:
-                    file_cache[parquet_file] = load_parquet(parquet_file)
-                except Exception as e:
-                    print(f"Error loading file {parquet_file}: {e}")
-                    local_vars[safe_var] = pd.Series(dtype=float)
-                    continue
-            df = file_cache[parquet_file]
+            try:
+                df, actual_file = load_data(file_name)
+            except FileNotFoundError as e:
+                print(e)
+                local_vars[safe_var] = pd.Series(dtype=float)
+                continue
+            if actual_file not in file_cache:
+                file_cache[actual_file] = df
+            df = file_cache[actual_file]
 
             col_name = match.group('col')
             field_name = match.group('field')  # None for single-level tokens
@@ -135,7 +161,7 @@ def evaluate_new_expression(expression, file_cache=None):
                     if key in df.columns:
                         local_vars[safe_var] = df[key]
                     else:
-                        print(f"Warning: Column {key} not found in {parquet_file}.")
+                        print(f"Warning: Column {key} not found in {actual_file}.")
                         local_vars[safe_var] = pd.Series(dtype=float)
                 else:
                     # If not MultiIndex, try a composite key (e.g. "col:field")
@@ -143,7 +169,7 @@ def evaluate_new_expression(expression, file_cache=None):
                     if key in df.columns:
                         local_vars[safe_var] = df[key]
                     else:
-                        print(f"Warning: Column {key} not found in {parquet_file}.")
+                        print(f"Warning: Column {key} not found in {actual_file}.")
                         local_vars[safe_var] = pd.Series(dtype=float)
             else:
                 # Single-level column: expect df.columns to be a single index.
@@ -151,12 +177,12 @@ def evaluate_new_expression(expression, file_cache=None):
                     if col_name in df.columns:
                         local_vars[safe_var] = df[col_name]
                     else:
-                        print(f"Warning: Column '{col_name}' not found in {parquet_file}.")
+                        print(f"Warning: Column '{col_name}' not found in {actual_file}.")
                         local_vars[safe_var] = pd.Series(dtype=float)
                 else:
                     # If the DataFrame has a MultiIndex but only two parts were provided,
                     # warn the user and try to use the first matching column.
-                    print(f"Warning: File {parquet_file} has a MultiIndex; token '{token}' may be ambiguous.")
+                    print(f"Warning: File {actual_file} has a MultiIndex; token '{token}' may be ambiguous.")
                     possible = [col for col in df.columns if col[0] == col_name]
                     if possible:
                         local_vars[safe_var] = df[possible[0]]
@@ -226,10 +252,10 @@ def plot_columns(group_expressions):
 
 def main():
     parser = argparse.ArgumentParser(
-        description=("Plot expressions from Parquet files supporting both single and multi-level columns. "
+        description=("Plot expressions from Parquet or CSV files supporting both single and multi-level columns. "
                      "Token formats: 'filename:col:field' for multi-level and 'filename:column' for single-level. "
-                     "Constants are specified as ':number'. If a DataFrame has a 'date' column, it is converted "
-                     "to a datetime index and used for the x-axis labels.")
+                     "Constants are specified as ':number'. For CSV files, a heuristic is used to detect a datetime "
+                     "column from the first few data points to use as the x-axis labels.")
     )
     parser.add_argument("expressions", type=str, nargs='+',
                         help=('List of expressions. For file column references use "filename:col:field" (multi-level) '
