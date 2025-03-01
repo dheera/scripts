@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#!/usr/bin/env python3
 """
 Usage:
     plotx EXPRESSION [EXPRESSION ...]
@@ -10,7 +9,7 @@ Description:
     against its index. Multiple expressions provided on the command line will be plotted in separate subplots,
     while comma-separated expressions within a single argument will be plotted on the same subplot.
 
-Token Formats:
+Token Formats (when --file is not specified):
     1. Multi-level column reference:
          "filename:col:field"
          - Loads "filename.parquet" or "filename.csv" and extracts the multi-level column (col, field).
@@ -22,6 +21,12 @@ Token Formats:
     3. Constant:
          ":number"
          - Interprets as a constant number.
+
+When --file is specified:
+    Variables are interpreted directly as column names in the provided file.
+    For example:
+      - "NVDA:close" is interpreted as df["NVDA", "close"] if df.columns is a MultiIndex, or as df["NVDA:close"] otherwise.
+      - "NVDA" is interpreted as df["NVDA"].
 
 Examples:
     1. Plot a single multi-level column (from a Parquet file):
@@ -43,10 +48,9 @@ Examples:
          plotx "NVDA:close" "2025-02-20:NVDA:close"
 
 Note:
-    - The file token (e.g. "NVDA" or "2025-02-20") will be resolved by checking for "NVDA.parquet" (or "2025-02-20.parquet")
+    - In the default behavior, the file token (e.g. "NVDA" or "2025-02-20") is resolved by checking for "NVDA.parquet" (or "2025-02-20.parquet")
       first. If not found, it will try "NVDA.csv" (or "2025-02-20.csv").
-    - For CSV files, a heuristic is applied to identify a datetime column. If a column’s first few entries can be parsed as dates,
-      that column is set as the index and used for the x-axis labels.
+    - For CSV files, a heuristic is applied to identify a datetime column.
 """
 
 import os
@@ -63,10 +67,8 @@ def infer_datetime_index(df, nrows=5):
     then set that column as the index.
     """
     for col in df.columns:
-        # If already datetime, use it.
         if pd.api.types.is_datetime64_any_dtype(df[col]):
             return df.set_index(col)
-        # Otherwise, if the column is object-like, try to convert a few entries.
         if df[col].dtype == 'object':
             sample = pd.to_datetime(df[col].head(nrows), errors='coerce')
             if sample.notna().sum() >= max(1, nrows // 2):
@@ -93,23 +95,24 @@ def load_data(file_name_base):
             return df, candidate
     raise FileNotFoundError(f"Neither {file_name_base}.parquet nor {file_name_base}.csv exists.")
 
-def evaluate_new_expression(expression, file_cache=None):
+def evaluate_new_expression(expression, file_cache=None, global_df=None):
     """
     Evaluate an arithmetic expression supporting tokens in the new format.
 
-    Supported token formats:
-      - Multi-level column reference:
-          "filename:col:field"
-          Loads "filename.parquet" or "filename.csv" and extracts the multi-level column (col, field).
-      - Single-level column reference:
-          "filename:column"
-          Loads "filename.parquet" or "filename.csv" and extracts the column "column".
-      - Constant:
-          ":number"
-          Interprets as a constant number.
+    When global_df is not provided (default behavior):
+      - Multi-level token: "filename:col:field" loads the file and extracts the multi-level column.
+      - Single-level token: "filename:column" loads the file and extracts the column.
+      - Constant: ":number" is interpreted as a constant.
+
+    When global_df is provided (--file specified):
+      - Tokens are interpreted as column references in global_df.
+      - For a token containing a colon (e.g. "NVDA:close"), if global_df has a MultiIndex, it is accessed as
+        global_df[("NVDA", "close")]. Otherwise, it is accessed as global_df["NVDA:close"].
+      - Tokens without a colon are accessed as global_df["token"].
 
     Example:
-         "2025-02-20:NVDA:close / NVDA:close"
+         "2025-02-20:NVDA:close / NVDA:close" (default)
+         "NVDA:close / :2.4" (--file mode: both tokens refer to columns in the provided file)
     """
     if file_cache is None:
         file_cache = {}
@@ -117,8 +120,8 @@ def evaluate_new_expression(expression, file_cache=None):
     token_to_var = {}
     safe_expr = expression
 
-    # Regex pattern supports tokens of two forms:
-    #   1. File tokens: either "file:col" (single-level) or "file:col:field" (multi-level)
+    # Regex pattern supports tokens:
+    #   1. File tokens: "file:col" or "file:col:field"
     #   2. Constant tokens: tokens starting with a colon followed by a number.
     pattern = re.compile(
         r'(?P<file_token>(?P<file>[^:\s]+):(?P<col>[^:\s]+)(?::(?P<field>[^:\s]+))?)'
@@ -132,6 +135,7 @@ def evaluate_new_expression(expression, file_cache=None):
         safe_var = f"token_{len(token_to_var)}"
         token_to_var[token] = safe_var
 
+        # Process constant tokens in both modes.
         if match.group('constant_token'):
             try:
                 const_value = float(match.group('constant'))
@@ -139,55 +143,102 @@ def evaluate_new_expression(expression, file_cache=None):
             except ValueError:
                 print(f"Error parsing constant token '{token}'.")
                 local_vars[safe_var] = 0.0
+        # Process file tokens.
         elif match.group('file_token'):
-            file_name = match.group('file')
-            try:
-                df, actual_file = load_data(file_name)
-            except FileNotFoundError as e:
-                print(e)
-                local_vars[safe_var] = pd.Series(dtype=float)
-                continue
-            if actual_file not in file_cache:
-                file_cache[actual_file] = df
-            df = file_cache[actual_file]
-
-            col_name = match.group('col')
-            field_name = match.group('field')  # None for single-level tokens
-
-            if field_name is not None:
-                # Multi-level column: expect df.columns to be a MultiIndex.
-                if isinstance(df.columns, pd.MultiIndex):
-                    key = (col_name, field_name)
-                    if key in df.columns:
-                        local_vars[safe_var] = df[key]
+            # When a global file is provided, ignore the file part in the token.
+            if global_df is not None:
+                parts = token.split(':')
+                if len(parts) == 1:
+                    # Single-level column reference.
+                    col_key = parts[0]
+                    if col_key in global_df.columns:
+                        local_vars[safe_var] = global_df[col_key]
                     else:
-                        print(f"Warning: Column {key} not found in {actual_file}.")
+                        print(f"Warning: Column '{col_key}' not found in provided file.")
                         local_vars[safe_var] = pd.Series(dtype=float)
+                elif len(parts) == 2:
+                    # "NVDA:close" -> treat as multi-level if applicable.
+                    col1, col2 = parts
+                    if isinstance(global_df.columns, pd.MultiIndex):
+                        key = (col1, col2)
+                        if key in global_df.columns:
+                            local_vars[safe_var] = global_df[key]
+                        else:
+                            print(f"Warning: Column {key} not found in provided file.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
+                    else:
+                        comp_key = f"{col1}:{col2}"
+                        if comp_key in global_df.columns:
+                            local_vars[safe_var] = global_df[comp_key]
+                        else:
+                            print(f"Warning: Column '{comp_key}' not found in provided file.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
+                elif len(parts) >= 3:
+                    # For tokens like "2025-02-20:NVDA:close", ignore the first part.
+                    _, col, field = parts[:3]
+                    if isinstance(global_df.columns, pd.MultiIndex):
+                        key = (col, field)
+                        if key in global_df.columns:
+                            local_vars[safe_var] = global_df[key]
+                        else:
+                            print(f"Warning: Column {key} not found in provided file.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
+                    else:
+                        comp_key = f"{col}:{field}"
+                        if comp_key in global_df.columns:
+                            local_vars[safe_var] = global_df[comp_key]
+                        else:
+                            print(f"Warning: Column '{comp_key}' not found in provided file.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
                 else:
-                    # If not MultiIndex, try a composite key (e.g. "col:field")
-                    key = f"{col_name}:{field_name}"
-                    if key in df.columns:
-                        local_vars[safe_var] = df[key]
-                    else:
-                        print(f"Warning: Column {key} not found in {actual_file}.")
-                        local_vars[safe_var] = pd.Series(dtype=float)
+                    local_vars[safe_var] = pd.Series(dtype=float)
             else:
-                # Single-level column: expect df.columns to be a single index.
-                if not isinstance(df.columns, pd.MultiIndex):
-                    if col_name in df.columns:
-                        local_vars[safe_var] = df[col_name]
+                # Default behavior: use the first token as the file name.
+                file_name = match.group('file')
+                try:
+                    df, actual_file = load_data(file_name)
+                except FileNotFoundError as e:
+                    print(e)
+                    local_vars[safe_var] = pd.Series(dtype=float)
+                    continue
+                if actual_file not in file_cache:
+                    file_cache[actual_file] = df
+                df = file_cache[actual_file]
+
+                col_name = match.group('col')
+                field_name = match.group('field')
+
+                if field_name is not None:
+                    # Multi-level column.
+                    if isinstance(df.columns, pd.MultiIndex):
+                        key = (col_name, field_name)
+                        if key in df.columns:
+                            local_vars[safe_var] = df[key]
+                        else:
+                            print(f"Warning: Column {key} not found in {actual_file}.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
                     else:
-                        print(f"Warning: Column '{col_name}' not found in {actual_file}.")
-                        local_vars[safe_var] = pd.Series(dtype=float)
+                        key = f"{col_name}:{field_name}"
+                        if key in df.columns:
+                            local_vars[safe_var] = df[key]
+                        else:
+                            print(f"Warning: Column {key} not found in {actual_file}.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
                 else:
-                    # If the DataFrame has a MultiIndex but only two parts were provided,
-                    # warn the user and try to use the first matching column.
-                    print(f"Warning: File {actual_file} has a MultiIndex; token '{token}' may be ambiguous.")
-                    possible = [col for col in df.columns if col[0] == col_name]
-                    if possible:
-                        local_vars[safe_var] = df[possible[0]]
+                    # Single-level column.
+                    if not isinstance(df.columns, pd.MultiIndex):
+                        if col_name in df.columns:
+                            local_vars[safe_var] = df[col_name]
+                        else:
+                            print(f"Warning: Column '{col_name}' not found in {actual_file}.")
+                            local_vars[safe_var] = pd.Series(dtype=float)
                     else:
-                        local_vars[safe_var] = pd.Series(dtype=float)
+                        print(f"Warning: File {actual_file} has a MultiIndex; token '{token}' may be ambiguous.")
+                        possible = [col for col in df.columns if col[0] == col_name]
+                        if possible:
+                            local_vars[safe_var] = df[possible[0]]
+                        else:
+                            local_vars[safe_var] = pd.Series(dtype=float)
         safe_expr = safe_expr.replace(token, safe_var)
 
     try:
@@ -200,25 +251,25 @@ def evaluate_new_expression(expression, file_cache=None):
         print(f"Error evaluating expression '{expression}': {e}")
         return None
 
-def plot_columns(group_expressions):
+def plot_columns(group_expressions, global_df=None):
     """
     For each group expression (which may contain comma-separated subexpressions),
-    evaluate each subexpression (using the new format) and plot them on the same subplot.
-    If any of the series has a datetime index, the x-axis will be formatted accordingly.
+    evaluate each subexpression and plot them on the same subplot.
+    If any series has a datetime index, the x-axis will be formatted accordingly.
     """
     num_groups = len(group_expressions)
     fig, axes = plt.subplots(num_groups, 1, figsize=(10, 5 * num_groups), sharex=True)
     if num_groups == 1:
         axes = [axes]
 
-    file_cache = {}
+    file_cache = {} if global_df is None else None
 
     for ax, group_expr in zip(axes, group_expressions):
         sub_expressions = [s.strip() for s in group_expr.split(",") if s.strip()]
         series_list = []
 
         for sub_expr in sub_expressions:
-            series = evaluate_new_expression(sub_expr, file_cache)
+            series = evaluate_new_expression(sub_expr, file_cache=file_cache, global_df=global_df)
             if series is None or (isinstance(series, pd.Series) and series.dropna().empty):
                 print(f"Skipping subexpression '{sub_expr}' due to errors or no valid data.")
                 continue
@@ -231,7 +282,6 @@ def plot_columns(group_expressions):
             print(f"No valid data to plot for group '{group_expr}'.")
             continue
 
-        # If any series index is datetime, format the x-axis as dates.
         if any(pd.api.types.is_datetime64_any_dtype(s.index) for s in series_list):
             ax.xaxis_date()
 
@@ -244,7 +294,6 @@ def plot_columns(group_expressions):
         ax.legend()
         ax.grid(True)
 
-    # Auto-format date labels on the x-axis for the entire figure.
     plt.gcf().autofmt_xdate()
     plt.xlabel("Time")
     plt.tight_layout()
@@ -255,13 +304,25 @@ def main():
         description=("Plot expressions from Parquet or CSV files supporting both single and multi-level columns. "
                      "Token formats: 'filename:col:field' for multi-level and 'filename:column' for single-level. "
                      "Constants are specified as ':number'. For CSV files, a heuristic is used to detect a datetime "
-                     "column from the first few data points to use as the x-axis labels.")
+                     "column from the first few data points to use as the x-axis labels. "
+                     "When --file is provided, tokens refer directly to columns in the given file.")
     )
     parser.add_argument("expressions", type=str, nargs='+',
                         help=('List of expressions. For file column references use "filename:col:field" (multi-level) '
                               'or "filename:column" (single-level), and for constants use ":number".'))
+    parser.add_argument("--file", type=str, help="Specify a file (without extension) to load for all column references.")
     args = parser.parse_args()
-    plot_columns(args.expressions)
+
+    if args.file:
+        try:
+            global_df, actual_file = load_data(args.file)
+            print(f"Loaded global file: {actual_file}")
+        except FileNotFoundError as e:
+            print(e)
+            return
+        plot_columns(args.expressions, global_df=global_df)
+    else:
+        plot_columns(args.expressions)
 
 if __name__ == "__main__":
     main()
