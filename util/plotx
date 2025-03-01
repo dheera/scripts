@@ -23,29 +23,31 @@ Token Formats (when --file is not specified):
          - Interprets as a constant number.
 
 When --file is specified:
-    Variables are interpreted directly as column names in the provided file.
-    For example:
+    Variables are interpreted directly as "col" or "col:field" in the provided file; filename is not part of the variable name.
+    For example, if you run
+      plotx --file 2025-02-20.parquet "NVDA:close"
       - "NVDA:close" is interpreted as df["NVDA", "close"] if df.columns is a MultiIndex, or as df["NVDA:close"] otherwise.
       - "NVDA" is interpreted as df["NVDA"].
 
 Examples:
-    1. Plot a single multi-level column (from a Parquet file):
+    1. Plot a single multi-level column (from a Parquet file 2025-02-20.parquet, i.e. df["NVDA", "close"] from that file):
          plotx 2025-02-20:NVDA:close
 
-    2. Plot a single-level column (from a CSV or Parquet file):
-         plotx NVDA:close
+    2. Plot a single-level column (from a CSV or Parquet file 2025-02-20.parquet, i.e. df["NVDA"] from that file):
+         plotx 2025-02-20:NVDA
 
-    3. Plot an arithmetic expression between a multi-level and a single-level column:
-         plotx 2025-02-20:NVDA:close / NVDA:close
+    3. Plot an arithmetic expression between two columns:
+         plotx 2025-02-20:NVDA:close / 2025-02-20:TSM:close
+         plotx 2025-02-20:NVDA:close / 2025-02-20:TSM:close
 
     4. Plot an expression using a constant:
          plotx NVDA:close / :2.4
 
     5. Plot multiple expressions on the same subplot:
-         plotx "NVDA:close, 2025-02-20:NVDA:close"
+         plotx "NVDA:close, TSM:close"
 
     6. Plot each expression in separate subplots:
-         plotx "NVDA:close" "2025-02-20:NVDA:close"
+         plotx "NVDA:close" "TSM:close"
 
 Note:
     - In the default behavior, the file token (e.g. "NVDA" or "2025-02-20") is resolved by checking for "NVDA.parquet" (or "2025-02-20.parquet")
