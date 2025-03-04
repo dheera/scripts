@@ -3,8 +3,28 @@
     "editor.fontLigatures": false,
     "terminal.integrated.enableMultiLinePasteWarning": false,
     "workbench.colorCustomizations": {
-        
+
         "editorGroup.border": "#808080",
         "terminal.border": "#808080"
+        "terminal.background":"#2E2A31",
+        "terminal.foreground":"#BCBABE",
+        "terminalCursor.background":"#BCBABE",
+        "terminalCursor.foreground":"#BCBABE",
+        "terminal.ansiBlack":"#2E2A31",
+        "terminal.ansiBlue":"#796AF5",
+        "terminal.ansiBrightBlack":"#838085",
+        "terminal.ansiBrightBlue":"#796AF5",
+        "terminal.ansiBrightCyan":"#149BDA",
+        "terminal.ansiBrightGreen":"#17AD98",
+        "terminal.ansiBrightMagenta":"#BB60EA",
+        "terminal.ansiBrightRed":"#D8137F",
+        "terminal.ansiBrightWhite":"#F5F4F7",
+        "terminal.ansiBrightYellow":"#DC8A0E",
+        "terminal.ansiCyan":"#149BDA",
+        "terminal.ansiGreen":"#17AD98",
+        "terminal.ansiMagenta":"#BB60EA",
+        "terminal.ansiRed":"#D8137F",
+        "terminal.ansiWhite":"#BCBABE",
+        "terminal.ansiYellow":"#DC8A0E"
     }
 }
