@@ -1,0 +1,10 @@
+{
+    "editor.fontFamily": "'Jetbrains Mono','Droid Sans Mono', 'monospace', monospace",
+    "editor.fontLigatures": false,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "workbench.colorCustomizations": {
+        
+        "editorGroup.border": "#808080",
+        "terminal.border": "#808080"
+    }
+}
