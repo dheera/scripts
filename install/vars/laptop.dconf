@@ -34,6 +34,3 @@ trans-use-custom-opacity=true
 tray-padding=-1
 tray-size=16
 window-preview-title-position='TOP'
-
-[com/github/libpinyin/ibus-libpinyin/libpinyin]
-opencc-config='s2tw.json'
