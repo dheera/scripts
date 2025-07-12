@@ -16,7 +16,7 @@ sudo cp "$FILE" "$BACKUP_FILE"
 echo "Backup created at $BACKUP_FILE"
 
 # Perform the replacement using sed
-sudo sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --force-device-scale-factor=1.25|g' "$FILE"
+sudo sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --force-device-scale-factor=1.5 --disable-session-crashed-bubble --disable-infobars|g' "$FILE"
 
 echo "Replacement completed successfully."
 
