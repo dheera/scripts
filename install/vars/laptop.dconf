@@ -19,6 +19,10 @@ hot-keys=false
 hotkeys-overlay-combo='TEMPORARILY'
 leftbox-padding=-1
 leftbox-size=18
+<<<<<<< HEAD
+=======
+multi-monitors=false
+>>>>>>> f7ed2935fcbea71a9c5712166db54e06db9a9af0
 panel-anchors='{"0":"MIDDLE"}'
 panel-element-positions='{"0":[{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"showAppsButton","visible":true,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"desktopButton","visible":false,"position":"stackedBR"}]}'
 panel-lengths='{"0":100}'
@@ -34,5 +38,24 @@ trans-panel-opacity=0.40000000000000002
 trans-use-custom-gradient=false
 trans-use-custom-opacity=true
 tray-padding=-1
+<<<<<<< HEAD
 tray-size=14
+=======
+tray-size=16
+tray-size=18
+>>>>>>> f7ed2935fcbea71a9c5712166db54e06db9a9af0
 window-preview-title-position='TOP'
+
+[org/gnome/shell/extensions/panel-date-format]
+format='%H\n%M'
+
+[org/gnome/desktop/interface]
+text-scaling-factor=1.25
+
+[org/gnome/nautilus/list-view]
+default-zoom-level='medium'
+
+[org/gtk/settings/color-chooser]
+custom-colors=[(0.16470588235294117, 0.4823529411764706, 0.87058823529411766, 1.0), (0.0, 0.16862745098039217, 0.21176470588235294, 1.0)]
+selected-color=(true, 0.16470588235294117, 0.4823529411764706, 0.87058823529411766, 1.0)
+
