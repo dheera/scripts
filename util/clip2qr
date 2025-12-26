@@ -108,7 +108,7 @@ def show_image(img: PIL.Image):
     label.bind("<Button-1>", lambda event: (win.destroy(), server.stop() if server is not None else None))
     label.pack()
 
-    win.after(30000, lambda: (win.destroy(), stop_server()))
+    win.after(30000, lambda: (win.destroy(), server.stop() if server is not None else None))
     win.mainloop()
 
 server = None
