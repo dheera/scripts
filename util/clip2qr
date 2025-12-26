@@ -23,11 +23,53 @@ import threading
 import os
 import random
 import string
-from urllib.parse import urlparse, parse_qs
+import subprocess
+import re
+from urllib.parse import urlparse, parse_qs, unquote
 import PIL.Image
 
 if os.environ['XDG_SESSION_TYPE'] == 'wayland':
     pyperclip.set_clipboard('wl-clipboard')
+
+def get_monitors():
+    """
+    Get list of monitor geometries using xrandr.
+    Returns list of (x, y, width, height) tuples for each connected monitor.
+    """
+    try:
+        output = subprocess.check_output(['xrandr', '--query'], stderr=subprocess.DEVNULL, text=True)
+        monitors = []
+        # Match lines like: "DP-1 connected primary 2560x1440+0+0" or "HDMI-1 connected 1920x1080+2560+0"
+        pattern = r'\bconnected\b.*?(\d+)x(\d+)\+(\d+)\+(\d+)'
+        for line in output.splitlines():
+            if ' connected' in line:
+                match = re.search(pattern, line)
+                if match:
+                    w, h, x, y = map(int, match.groups())
+                    monitors.append((x, y, w, h))
+        return monitors
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return []
+
+def get_display_position(img_width, img_height, screen_width, screen_height):
+    """
+    Determine the best position to display the QR code.
+    For even number of monitors, center on the first monitor.
+    For odd number (or if detection fails), center on the combined screen.
+    """
+    monitors = get_monitors()
+    
+    if len(monitors) > 0 and len(monitors) % 2 == 0:
+        # Even number of monitors - use the first one to avoid splitting
+        x, y, w, h = monitors[0]
+        pos_x = x + w // 2 - img_width // 2
+        pos_y = y + h // 2 - img_height // 2
+    else:
+        # Odd number of monitors or detection failed - center on combined screen
+        pos_x = screen_width // 2 - img_width // 2
+        pos_y = screen_height // 2 - img_height // 2
+    
+    return pos_x, pos_y
 
 def get_qr(url:str, size:int = 960):
     """
@@ -55,8 +97,7 @@ def show_image(img: PIL.Image):
     screen_height = win.winfo_screenheight()
     
     window = Toplevel(win)
-    x = screen_width // 2 - img.size[0]// 2 + 1000
-    y = screen_height // 2 - img.size[1] // 2
+    x, y = get_display_position(img.size[0], img.size[1], screen_width, screen_height)
     window.geometry(f"{img.size[0]}x{img.size[1]}+{x}+{y}")
     window.overrideredirect(1)
     
@@ -89,7 +130,9 @@ class FileServer(object):
             def do_GET(self):
                 parsed_path = urlparse(self.path)
                 query_params = parse_qs(parsed_path.query)
-                if parsed_path.path == f'/{filename}' and query_params.get('password', [None])[0] == password:
+                # URL-decode the path to handle non-ASCII characters (e.g., Chinese filenames)
+                decoded_path = unquote(parsed_path.path)
+                if decoded_path == f'/{filename}' and query_params.get('password', [None])[0] == password:
                     super().do_GET()
                 else:
                     self.send_error(404, "File Not Found")
