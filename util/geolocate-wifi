@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+from subprocess import Popen, PIPE
+import requests
+
+def call(cmd):
+    p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    output, err = p.communicate()
+    return output.decode('utf-8')
+
+def scan(rescan=True):
+    accesspoints = []
+    if rescan:
+        call(['nmcli', 'dev', 'wifi', 'rescan'])
+    response = call(['nmcli', '-t', '-f', 'BSSID,SIGNAL,CHAN', 'dev', 'wifi', 'list'])
+    for line in response.strip().split('\n'):
+        if not line:
+            continue
+        # nmcli escapes colons in MAC with backslashes, so split on unescaped colons
+        # Format: AA\:BB\:CC\:DD\:EE\:FF:SIGNAL:CHAN
+        parts = line.replace('\\:', '-').split(':')
+        if len(parts) >= 3:
+            bssid = parts[0].replace('-', ':')
+            signal = parts[1]
+            channel = parts[2]
+            try:
+                accesspoints.append({
+                    'macAddress': bssid,
+                    'signalStrength': int(signal) - 100,  # Convert % to approx dBm
+                    'channel': int(channel),
+                })
+            except (ValueError, IndexError):
+                pass
+    return accesspoints
+
+def geolocate(wifiAccessPoints, url):
+    data = {
+        "considerIp": "true",
+        "wifiAccessPoints": wifiAccessPoints,
+    }
+    try:
+        r = requests.post(url, json=data, timeout=10)
+        result = r.json()
+        if 'error' in result:
+            print(f"Error: {result['error'].get('message', 'Unknown error')}", file=sys.stderr)
+        return result
+    except Exception:
+        return None
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Geolocate using WiFi access points')
+    parser.add_argument('--no-rescan', action='store_true',
+                        help='Use cached scan results instead of triggering a new scan')
+    args = parser.parse_args()
+
+    api_key = os.environ.get('GOOGLE_API_KEY')
+    if not api_key:
+        print("GOOGLE_API_KEY environment variable required", file=sys.stderr)
+        sys.exit(1)
+
+    url = f'https://www.googleapis.com/geolocation/v1/geolocate?key={api_key}'
+
+    aps = scan(rescan=not args.no_rescan)
+    if not aps:
+        print("No access points found", file=sys.stderr)
+        sys.exit(1)
+
+    result = geolocate(aps, url)
+    if not result or 'location' not in result:
+        print("Geolocation failed", file=sys.stderr)
+        sys.exit(1)
+
+    lat = result['location']['lat']
+    lng = result['location']['lng']
+    print(f"{lat},{lng}")
