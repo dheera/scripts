@@ -1,0 +1,129 @@
+#!/bin/bash
+
+# I use this script to quickly launch into docker environments with my
+# home directory mounted, without fussing with docker command line args.
+# (a) test things under different ROS releases quickly
+# (b) stronger containerization than conda
+# (c) maintain consistent, reproducible dev environments
+# (d) stably work on things that require Ubuntu LTS releases so that i can run cutting-edge releases for my desktop itself
+# (e) automatically use --runtime-nvidia if necessary
+# (f) probably more things in the future
+# 
+# This script will check if the image has already been launched, and if so, just run a shell in it. This allows me
+# to keep docker-launching from multiple terminal windows and it will keep using the same container.
+#
+# The dockerfiles for all of these containers are in dockerfiles/
+#
+# For example, when working on machine learning stuff I just do
+# $ docker-launch ml
+# 
+# And then when working on machine learning stuff on a CPU-only machine I just do
+# $ docker-launch mlcpu
+#
+# When I need to test something on an older ROS release on my shiny new Ubuntu desktop I can just do
+# $ docker-launch melodic
+#
+
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PWD=`pwd`
+
+# Check if the argument (tag) is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <tag> [--rebuild]"
+  echo
+  echo "This script checks if a Docker image with the given tag exists."
+  echo "If the image exists, it runs bash on the container."
+  echo "If the image does not exist, it builds the image from <tag>.dockerfile and then runs bash on the container."
+  echo "Optional [--rebuild] flag forcefully rebuilds the image from <tag>.dockerfile even if the image already exists."
+  exit 1
+fi
+
+TAG=openclaw
+INSTANCE=$1
+
+echo Instance: $1
+
+REBUILD=false
+
+# Check for the --rebuild option
+if [ "$2" == "--rebuild" ]; then
+  REBUILD=true
+fi
+
+# Function to build the Docker image
+build_image() {
+  echo "Building Docker image from $TAG.dockerfile..."
+  if [ -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" ]; then
+    cd $SCRIPT_DIR/dockerfiles
+    DOCKER_BUILDKIT=1 docker build -t "docker_launch_$TAG$INSTANCE" -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" .
+    cd $PWD
+    if [ $? -ne 0 ]; then
+      echo "Failed to build Docker image with tag '$TAG$INSTANCE'."
+      exit 1
+    fi
+  else
+    echo "Dockerfile '$TAG.dockerfile' does not exist."
+    exit 1
+  fi
+}
+
+# Function to check if the Dockerfile uses an NVIDIA base image
+uses_nvidia_runtime() {
+  if [ -f "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile" ]; then
+    if grep -qi '^FROM.*nvidia' "$SCRIPT_DIR/dockerfiles/$TAG.dockerfile"; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    echo "Dockerfile '$TAG.dockerfile' does not exist."
+    exit 1
+  fi
+}
+
+# Check if the Docker image with the given tag exists or if rebuild is requested
+if $REBUILD || ! docker image inspect "docker_launch_$TAG$INSTANCE" > /dev/null 2>&1; then
+  build_image
+fi
+
+if docker ps | grep -q docker_launch_$TAG$INSTANCE
+then
+  docker exec -it docker_launch_$TAG$INSTANCE /bin/bash
+else
+  echo "(starting)"
+  docker rm docker_launch_$TAG$INSTANCE 2>/dev/null
+
+  RUNTIME_OPTIONS=""
+  if uses_nvidia_runtime; then
+    RUNTIME_OPTIONS="--runtime nvidia"
+  fi
+ 
+  PLATFORM_OPTIONS="" 
+  if [[ "$OSTYPE" == linux-gnu* ]]; then
+      PLATFORM_OPTIONS="\
+       -v $XAUTHORITY:/root/.Xauthority"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+      PLATFORM_OPTIONS=""
+  else
+      echo "Unknown operating system: $OSTYPE"
+  fi
+
+  DOCKER_RUN_CMD="docker run \
+      -e DISPLAY=host.docker.internal:0 \
+      -e DBUS_SESSION_BUS_ADDRESS \
+      -v /tmp/.X11-unix:/tmp/.X11-unix \
+      -v $HOME/openclaw/$INSTANCE:/home/openclaw \
+      -v /fin:/fin:ro \
+      --net=host \
+      --name docker_launch_$TAG$INSTANCE \
+      --privileged \
+      $PLATFORM_OPTIONS \
+      $RUNTIME_OPTIONS \
+      -d \
+      -it docker_launch_$TAG$INSTANCE /bin/bash"
+
+  eval $DOCKER_RUN_CMD
+  docker exec -it docker_launch_$TAG$INSTANCE /bin/bash
+fi
+
