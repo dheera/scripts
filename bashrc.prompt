@@ -2,11 +2,63 @@ case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
 esac
 
-if [ "$color_prompt" = yes ]; then
-    PS1='\[\033[01;34m\]\w\[\033[00m\] \[\033[01;32m\]:)\[\033[00m\] '
-else
-    PS1='\w :) '
-fi
+# deeper hues
+__user_colors=(
+    24   25   30   31   60
+    61   67   95   96   101
+    130  131  136  137  173
+)
 
-echo
+__username_color_idx() {
+    local s="$1"
+    local h=0
+    local i c
 
+    for (( i=0; i<${#s}; i++ )); do
+        printf -v c '%d' "'${s:i:1}"
+        h=$(( (h * 131 + c) & 0x7fffffff ))
+    done
+
+    # extra mixing so similar names separate more
+    h=$(( h ^ (h >> 11) ^ (h >> 19) ))
+    echo $(( h % ${#__user_colors[@]} ))
+}
+
+__prompt_command() {
+    local uid=$EUID
+    local user host smile
+
+    user=$(id -un)
+    host=$(hostname -s)
+
+    if [ "$color_prompt" = yes ]; then
+        local PURPLE='\[\033[38;5;97m\]'
+        local BLUE='\[\033[38;5;67m\]'
+        local GREEN='\[\033[38;5;34m\]'
+        local RED='\[\033[38;5;160m\]'
+        local GREY='\[\033[38;5;242m\]'
+        local RESET='\[\033[0m\]'
+
+        local idx
+        idx=$(__username_color_idx "$user")
+        local USER_COLOR="\[\033[38;5;${__user_colors[$idx]}m\]"
+
+        if [[ $uid -eq 0 ]]; then
+            smile="${RED}:]${RESET}"
+        else
+            smile="${GREEN}:)${RESET}"
+        fi
+
+        PS1="${USER_COLOR}${user}${RESET}${GREY}@${RESET}${PURPLE}${host}${RESET} ${BLUE}\w${RESET} ${smile} "
+    else
+        if [[ $uid -eq 0 ]]; then
+            smile=":]"
+        else
+            smile=":)"
+        fi
+
+        PS1="${user}@${host} \w ${smile} "
+    fi
+}
+
+PROMPT_COMMAND=__prompt_command
