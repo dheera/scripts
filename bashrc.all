@@ -1,6 +1,6 @@
 export FOREIGN_ALIASES_SUPPRESS_SKIP_MESSAGE=True
-source /home/dheera/bin/scripts/bashrc.prompt
-source /home/dheera/bin/scripts/bashrc.ros
-source /home/dheera/bin/scripts/bashrc.speling
-source /home/dheera/bin/scripts/bashrc.shortcuts
-source /home/dheera/bin/scripts/bashrc.vars
+source /home/$USER/bin/scripts/bashrc.prompt
+source /home/$USER/bin/scripts/bashrc.ros
+source /home/$USER/bin/scripts/bashrc.speling
+source /home/$USER/bin/scripts/bashrc.shortcuts
+source /home/$USER/bin/scripts/bashrc.vars
