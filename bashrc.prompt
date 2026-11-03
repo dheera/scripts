@@ -1,5 +1,5 @@
 case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
+    alacritty|xterm-color|*-256color) color_prompt=yes;;
 esac
 
 # deeper hues
