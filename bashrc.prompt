@@ -9,7 +9,7 @@ __colors=(
     130  131  136  137  173
 )
 
-__username_color_idx() {
+__color_idx() {
     local s="$1"
     local h=0
     local i c
@@ -40,11 +40,11 @@ __prompt_command() {
         local RESET='\[\033[0m\]'
 
         local user_idx
-        user_idx=$(__username_color_idx "$user")
+        user_idx=$(__color_idx "$user")
         local USER_COLOR="\[\033[38;5;${__colors[$user_idx]}m\]"
         
         local host_idx
-        host_idx=$(__username_color_idx "$host")
+        host_idx=$(__color_idx "$host")
         local HOST_COLOR="\[\033[38;5;${__colors[$host_idx]}m\]"
 
         if [[ $uid -eq 0 ]]; then
