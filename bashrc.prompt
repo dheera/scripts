@@ -3,7 +3,7 @@ case "$TERM" in
 esac
 
 # deeper hues
-__user_colors=(
+__colors=(
     24   25   30   31   60
     61   67   95   96   101
     130  131  136  137  173
@@ -21,7 +21,7 @@ __username_color_idx() {
 
     # extra mixing so similar names separate more
     h=$(( h ^ (h >> 11) ^ (h >> 19) ))
-    echo $(( h % ${#__user_colors[@]} ))
+    echo $(( h % ${#__colors[@]} ))
 }
 
 __prompt_command() {
@@ -39,9 +39,13 @@ __prompt_command() {
         local GREY='\[\033[38;5;242m\]'
         local RESET='\[\033[0m\]'
 
-        local idx
-        idx=$(__username_color_idx "$user")
-        local USER_COLOR="\[\033[38;5;${__user_colors[$idx]}m\]"
+        local user_idx
+        user_idx=$(__username_color_idx "$user")
+        local USER_COLOR="\[\033[38;5;${__colors[$user_idx]}m\]"
+        
+        local host_idx
+        host_idx=$(__username_color_idx "$host")
+        local HOST_COLOR="\[\033[38;5;${__colors[$host_idx]}m\]"
 
         if [[ $uid -eq 0 ]]; then
             smile="${RED}:]${RESET}"
@@ -49,7 +53,7 @@ __prompt_command() {
             smile="${GREEN}:)${RESET}"
         fi
 
-        PS1="${USER_COLOR}${user}${RESET}${GREY}@${RESET}${PURPLE}${host}${RESET} ${BLUE}\w${RESET} ${smile} "
+        PS1="${USER_COLOR}${user}${RESET}${GREY}@${RESET}${HOST_COLOR}${host}${RESET} ${BLUE}\w${RESET} ${smile} "
     else
         if [[ $uid -eq 0 ]]; then
             smile=":]"
